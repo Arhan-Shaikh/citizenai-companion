@@ -78,6 +78,16 @@ export const saved = {
       write(KEYS.documents, read<SavedDocument[]>(KEYS.documents, []).filter((d) => d.documentType !== documentType));
     },
   },
+  notes: {
+    load: () => read<SavedNote[]>(KEYS.notes, []),
+    add: (question: string, answer: string) => {
+      const list = read<SavedNote[]>(KEYS.notes, []);
+      write(KEYS.notes, [{ savedAt: Date.now(), question, answer }, ...list].slice(0, 50));
+    },
+    remove: (savedAt: number) => {
+      write(KEYS.notes, read<SavedNote[]>(KEYS.notes, []).filter((n) => n.savedAt !== savedAt));
+    },
+  },
 };
 
 export const prefs = {
