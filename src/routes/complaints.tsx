@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NextBestAction, type NextAction } from "@/components/next-best-action";
+import { ProgressiveLoader, LOADING_STAGES } from "@/components/progressive-loader";
 import { useLanguage } from "@/components/language-provider";
 import { generateComplaint, translateText, type ComplaintResult } from "@/lib/complaints.functions";
 import { saved, assistantSeed } from "@/lib/local-store";
