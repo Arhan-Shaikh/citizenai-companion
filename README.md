@@ -297,20 +297,6 @@ bun test
 bun run build
 ```
 
----
-
-# 📸 Screenshots
-
-Add screenshots here:
-
-- Home Page
-- AI Assistant
-- Scheme Recommendation
-- Complaint Generator
-- Document Assistant
-- Mobile View
-
----
 
 # 🌱 Future Scope
 
@@ -351,6 +337,24 @@ https://www.linkedin.com/in/arhan-shaikh-191528f/
 
 ---
 
+---
+
+# 📸 Screenshots
+
+Add screenshots here:
+
+- Home Page
+- AI Assistant
+- Scheme Recommendation
+- Complaint Generator
+- Document Assistant
+- Mobile View
+
+---
+<img width="451" height="881" alt="ss3" src="https://github.com/user-attachments/assets/d6668f10-32fe-45bd-89dc-2d5ce9bd5d80" />
+<img width="497" height="882" alt="ss1" src="https://github.com/user-attachments/assets/5b2e9513-4626-4223-8ceb-9e49e26926e4" />
+<img width="468" height="875" alt="ss2" src="https://github.com/user-attachments/assets/b16f8611-9993-455c-a8cc-4f4c8b5f1e17" />
+<img width="477" height="876" alt="ss4" src="https://github.com/user-attachments/assets/9d075bc5-b516-42c9-9987-c527ead8fabf" />
 # 📄 License
 
 MIT License
