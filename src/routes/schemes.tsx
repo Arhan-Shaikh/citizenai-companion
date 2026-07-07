@@ -18,7 +18,7 @@ import { NextBestAction } from "@/components/next-best-action";
 import { useLanguage } from "@/components/language-provider";
 import { recommendSchemes, type SchemeResult } from "@/lib/schemes.functions";
 import { saved } from "@/lib/local-store";
-import { cn } from "@/lib/utils";
+import { cn, safeHttpUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/schemes")({
   head: () => ({
