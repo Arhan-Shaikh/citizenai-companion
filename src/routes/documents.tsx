@@ -155,9 +155,10 @@ function DocumentsPage() {
               <MetricCard
                 icon={Landmark}
                 label="Official portal"
-                value={guide.officialPortal ?? "Not confirmed"}
-                link={guide.officialPortal ?? undefined}
+                value={safeHttpUrl(guide.officialPortal) ?? "Not confirmed"}
+                link={safeHttpUrl(guide.officialPortal) ?? undefined}
               />
+
             </div>
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
