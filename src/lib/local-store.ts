@@ -123,6 +123,7 @@ export function exportAllData(): string {
       schemes: saved.schemes.load(),
       complaints: saved.complaints.load(),
       documents: saved.documents.load(),
+      notes: saved.notes.load(),
       exportedAt: new Date().toISOString(),
     },
     null,
