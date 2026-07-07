@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateObject, generateText, NoObjectGeneratedError } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { CHAT_MODEL, createGateway } from "./ai-gateway.server";
 import { langLabel } from "./prompt-templates";
@@ -10,26 +10,164 @@ const GenerateInput = z.object({
   language: z.string().max(10).default("en"),
 });
 
-const ComplaintSchema = z.object({
-  subject: z.string(),
-  category: z.string(),
-  department: z.string(),
-  priority: z.enum(["Low", "Medium", "High", "Critical"]),
-  body: z.string(),
-  expectedImpact: z.string(),
-  suggestedEvidence: z.array(z.string()),
-  affectedCitizensEstimate: z.string(),
-  impactScore: z.number().min(0).max(100),
-  nextActions: z.array(
-    z.object({
-      label: z.string(),
-      kind: z.enum(["translate", "assistant", "download"]),
-      payload: z.string(),
-    }),
-  ),
-});
+export type NextComplaintAction = {
+  label: string;
+  kind: "translate" | "assistant" | "download";
+  payload: string;
+};
 
-export type ComplaintResult = z.infer<typeof ComplaintSchema>;
+export type ComplaintResult = {
+  subject: string;
+  category: string;
+  department: string;
+  priority: "Low" | "Medium" | "High" | "Critical";
+  body: string;
+  expectedImpact: string;
+  suggestedEvidence: string[];
+  affectedCitizensEstimate: string;
+  impactScore: number;
+  nextActions: NextComplaintAction[];
+};
+
+function extractJson(text: string): unknown {
+  let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  const start = cleaned.search(/[{[]/);
+  if (start === -1) throw new Error("No JSON found in response");
+  const openChar = cleaned[start];
+  const closeChar = openChar === "[" ? "]" : "}";
+  const end = cleaned.lastIndexOf(closeChar);
+  if (end === -1 || end < start) throw new Error("No JSON terminator found");
+  cleaned = cleaned.substring(start, end + 1);
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    let repaired = cleaned
+      .replace(/,\s*}/g, "}")
+      .replace(/,\s*]/g, "]")
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+    let braces = 0;
+    let brackets = 0;
+    for (const c of repaired) {
+      if (c === "{") braces++;
+      else if (c === "}") braces--;
+      else if (c === "[") brackets++;
+      else if (c === "]") brackets--;
+    }
+    while (brackets-- > 0) repaired += "]";
+    while (braces-- > 0) repaired += "}";
+    return JSON.parse(repaired);
+  }
+}
+
+function asString(v: unknown, fallback = ""): string {
+  if (typeof v === "string") return v;
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  return fallback;
+}
+
+function asStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.map((x) => (typeof x === "string" ? x : String(x ?? ""))).filter((s) => s.trim().length > 0);
+}
+
+function asPriority(v: unknown): ComplaintResult["priority"] {
+  const s = asString(v).trim().toLowerCase();
+  if (s.startsWith("crit")) return "Critical";
+  if (s.startsWith("hig")) return "High";
+  if (s.startsWith("low")) return "Low";
+  return "Medium";
+}
+
+function extractField(text: string, label: string): string {
+  const re = new RegExp(`(?:^|\\n)\\s*(?:\\*\\*|##?\\s*)?${label}\\s*(?:\\*\\*)?\\s*[:\\-]\\s*([^\\n]+(?:\\n(?!\\s*(?:\\*\\*|##?|[A-Z][A-Za-z ]+:))[^\\n]+)*)`, "i");
+  const m = text.match(re);
+  return m ? m[1].trim().replace(/^\*+|\*+$/g, "").trim() : "";
+}
+
+function fallbackParse(text: string, description: string): ComplaintResult {
+  const subject = extractField(text, "Subject") || description.slice(0, 100);
+  const category = extractField(text, "Category") || "General Grievance";
+  const department = extractField(text, "Department") || "Municipal Authority";
+  const priority = asPriority(extractField(text, "Priority"));
+  const bodyMatch = text.match(/(?:Complaint Body|Body|Complaint Letter)\s*[:\-]?\s*([\s\S]+?)(?=\n\s*(?:Suggested Evidence|Expected|Impact|Affected|Next Actions)\s*[:\-]|$)/i);
+  const body = bodyMatch ? bodyMatch[1].trim() : text.trim();
+  const evidenceMatch = text.match(/Suggested Evidence\s*[:\-]?\s*([\s\S]+?)(?=\n\s*(?:Expected|Impact|Affected|Next Actions|$))/i);
+  const suggestedEvidence = evidenceMatch
+    ? evidenceMatch[1]
+        .split(/\n|,/)
+        .map((s) => s.replace(/^[\s\-*•\d.]+/, "").trim())
+        .filter((s) => s.length > 2)
+        .slice(0, 5)
+    : [];
+  const expectedImpact = extractField(text, "Expected Resolution") || extractField(text, "Expected Impact") || "Timely resolution of the reported issue.";
+
+  return {
+    subject: subject.slice(0, 140),
+    category,
+    department,
+    priority,
+    body,
+    expectedImpact,
+    suggestedEvidence,
+    affectedCitizensEstimate: extractField(text, "Affected") || "Local residents in the area",
+    impactScore: 60,
+    nextActions: [
+      { label: "Translate to Hindi", kind: "translate", payload: "Hindi" },
+      { label: "Ask follow-up in Assistant", kind: "assistant", payload: `How do I escalate this complaint: ${subject.slice(0, 80)}?` },
+      { label: "Download as .txt", kind: "download", payload: "txt" },
+    ],
+  };
+}
+
+function normalize(raw: unknown, description: string): ComplaintResult {
+  const obj = (raw ?? {}) as Record<string, unknown>;
+
+  const nextActionsRaw = Array.isArray(obj.nextActions) ? obj.nextActions : [];
+  const nextActions: NextComplaintAction[] = nextActionsRaw
+    .map((a) => {
+      const r = (a ?? {}) as Record<string, unknown>;
+      const kind = asString(r.kind).toLowerCase();
+      const validKind: NextComplaintAction["kind"] =
+        kind === "translate" || kind === "assistant" || kind === "download" ? kind : "assistant";
+      return {
+        label: asString(r.label).trim(),
+        kind: validKind,
+        payload: asString(r.payload).trim(),
+      };
+    })
+    .filter((a) => a.label && a.payload)
+    .slice(0, 3);
+
+  while (nextActions.length < 3) {
+    const defaults: NextComplaintAction[] = [
+      { label: "Translate to Hindi", kind: "translate", payload: "Hindi" },
+      { label: "Ask follow-up in Assistant", kind: "assistant", payload: `How do I escalate this complaint?` },
+      { label: "Download as .txt", kind: "download", payload: "txt" },
+    ];
+    nextActions.push(defaults[nextActions.length]);
+  }
+
+  const impactRaw = obj.impactScore;
+  const impactScore =
+    typeof impactRaw === "number" ? Math.max(0, Math.min(100, Math.round(impactRaw))) : 60;
+
+  const subject = asString(obj.subject).trim() || description.slice(0, 100);
+  const body = asString(obj.body).trim() || asString(obj.complaintBody).trim() || description;
+
+  return {
+    subject: subject.slice(0, 140),
+    category: asString(obj.category).trim() || "General Grievance",
+    department: asString(obj.department).trim() || "Municipal Authority",
+    priority: asPriority(obj.priority),
+    body,
+    expectedImpact: asString(obj.expectedImpact).trim() || asString(obj.expectedResolution).trim() || "Timely resolution of the reported issue.",
+    suggestedEvidence: asStringArray(obj.suggestedEvidence).slice(0, 5),
+    affectedCitizensEstimate: asString(obj.affectedCitizensEstimate).trim() || "Local residents in the area",
+    impactScore,
+    nextActions,
+  };
+}
 
 export const generateComplaint = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => GenerateInput.parse(data))
@@ -38,44 +176,62 @@ export const generateComplaint = createServerFn({ method: "POST" })
     const model = gateway(CHAT_MODEL);
     const lang = langLabel(data.language);
 
-    const prompt = `Transform this citizen's informal description into a professional civic complaint suitable for CPGRAMS / municipal grievance portals in India.
+    const prompt = `You are drafting a professional civic complaint for CPGRAMS / municipal grievance portals in India.
 
 Citizen description: """${data.description}"""
 Location: ${data.location ?? "not specified"}
 
-Return:
-- subject: single formal line, max 120 chars
-- category: one short label (e.g. "Sanitation", "Road Infrastructure", "Water Supply")
-- department: most likely responsible Indian government department or municipal body
-- priority: Low / Medium / High / Critical based on urgency and public risk
-- body: a formal complaint letter, 4-8 short paragraphs. Polite, factual, action-oriented. Include reference to relevant laws/citizen rights only if truly applicable.
-- expectedImpact: one sentence on what resolution would achieve
-- suggestedEvidence: up to 5 items the citizen should attach (photos, receipts, videos)
-- affectedCitizensEstimate: a plain-language estimate like "50-100 residents" or "an entire neighborhood"
-- impactScore: 0-100 integer weighing urgency, scale of impact, and public safety
-- nextActions: exactly 3 items. Kinds:
-  * "translate" — payload = target language name (e.g. "Hindi", "Marathi")
-  * "assistant" — payload = a specific follow-up question the citizen should ask the AI
-  * "download" — payload = "pdf" or "txt"
+Return ONLY a valid JSON object (no markdown, no code fences, no commentary) exactly matching this shape:
+{
+  "subject": "single formal line, max 120 chars",
+  "category": "short label e.g. Sanitation, Road Infrastructure, Water Supply",
+  "department": "most likely responsible Indian government department or municipal body",
+  "priority": "Low" | "Medium" | "High" | "Critical",
+  "body": "formal complaint letter, 4-8 short paragraphs, polite factual action-oriented",
+  "expectedImpact": "one sentence on what resolution would achieve",
+  "suggestedEvidence": ["up to 5 items citizen should attach"],
+  "affectedCitizensEstimate": "plain-language estimate e.g. 50-100 residents",
+  "impactScore": 0-100 integer,
+  "nextActions": [
+    { "label": "short text", "kind": "translate" | "assistant" | "download", "payload": "string" }
+  ]
+}
 
-Write subject, body, expectedImpact in ${lang}. Keep category, department, priority in English (they are internal labels).`;
+nextActions: exactly 3 items. kinds:
+- "translate" — payload = target language name (e.g. "Hindi", "Marathi")
+- "assistant" — payload = specific follow-up question citizen should ask the AI
+- "download" — payload = "pdf" or "txt"
+
+Write subject, body, expectedImpact in ${lang}. Keep category, department, priority in English. Output JSON only.`;
+
+    console.log("[complaints] prompt length:", prompt.length);
+
+    let text = "";
+    try {
+      const result = await generateText({ model, prompt });
+      text = result.text ?? "";
+      console.log("[complaints] raw response length:", text.length);
+      console.log("[complaints] raw response preview:", text.slice(0, 400));
+    } catch (err) {
+      console.error("[complaints] gateway request failed:", err);
+      throw new Error("Complaint service is temporarily unavailable. Please try again in a moment.");
+    }
+
+    if (!text.trim()) {
+      console.error("[complaints] empty response from gateway");
+      throw new Error("The AI returned an empty response. Please try again.");
+    }
 
     try {
-      const { object } = await generateObject({
-        model,
-        prompt,
-        schema: ComplaintSchema,
-      });
-      return {
-        ...object,
-        nextActions: object.nextActions.slice(0, 3),
-        suggestedEvidence: object.suggestedEvidence.slice(0, 5),
-      };
-    } catch (error) {
-      if (NoObjectGeneratedError.isInstance(error)) {
-        throw new Error("Could not generate a complaint. Please try rewording your description.");
-      }
-      throw error;
+      const parsed = extractJson(text);
+      const normalized = normalize(parsed, data.description);
+      console.log("[complaints] parsed subject:", normalized.subject);
+      return normalized;
+    } catch (err) {
+      console.warn("[complaints] JSON parse failed, falling back to text extraction:", err);
+      const fallback = fallbackParse(text, data.description);
+      console.log("[complaints] fallback subject:", fallback.subject);
+      return fallback;
     }
   });
 
