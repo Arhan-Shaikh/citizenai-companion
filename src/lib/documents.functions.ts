@@ -32,44 +32,6 @@ export type DocumentGuide = {
   nextActions: NextAction[];
 };
 
-function extractJson(text: string): unknown {
-  let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
-  const start = cleaned.search(/[{[]/);
-  if (start === -1) throw new Error("No JSON found in response");
-  const openChar = cleaned[start];
-  const closeChar = openChar === "[" ? "]" : "}";
-  const end = cleaned.lastIndexOf(closeChar);
-  if (end === -1 || end < start) throw new Error("No JSON terminator found");
-  cleaned = cleaned.substring(start, end + 1);
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    let repaired = cleaned
-      .replace(/,\s*}/g, "}")
-      .replace(/,\s*]/g, "]")
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
-    let braces = 0;
-    let brackets = 0;
-    for (const c of repaired) {
-      if (c === "{") braces++;
-      else if (c === "}") braces--;
-      else if (c === "[") brackets++;
-      else if (c === "]") brackets--;
-    }
-    while (brackets-- > 0) repaired += "]";
-    while (braces-- > 0) repaired += "}";
-    return JSON.parse(repaired);
-  }
-}
-
-function asString(v: unknown, fallback = ""): string {
-  return typeof v === "string" ? v : fallback;
-}
-function asStringArray(v: unknown): string[] {
-  if (!Array.isArray(v)) return [];
-  return v.map((x) => (typeof x === "string" ? x : String(x ?? ""))).filter(Boolean);
-}
 
 function normalize(raw: unknown, docType: string): DocumentGuide {
   const r = (raw ?? {}) as Record<string, unknown>;
