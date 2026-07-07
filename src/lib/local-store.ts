@@ -43,6 +43,7 @@ export const thread = {
 export type SavedScheme = { savedAt: number; scheme: SchemeResult["schemes"][number] };
 export type SavedComplaint = { savedAt: number; complaint: ComplaintResult; originalDescription: string };
 export type SavedDocument = { savedAt: number; documentType: string; guide: DocumentGuide };
+export type SavedNote = { savedAt: number; question: string; answer: string };
 
 export const saved = {
   schemes: {
