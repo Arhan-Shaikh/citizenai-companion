@@ -183,6 +183,38 @@ function MySpacePage() {
               </div>
             </Section>
           )}
+
+          {notes.length > 0 && (
+            <Section title="Saved answers" count={notes.length} icon={StickyNote}>
+              <div className="space-y-3">
+                {notes.map((n) => (
+                  <article key={n.savedAt} className="rounded-2xl border border-border/70 bg-card p-4">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {new Date(n.savedAt).toLocaleDateString()}
+                    </p>
+                    <h3 className="mt-1 line-clamp-1 text-base font-semibold">{n.question}</h3>
+                    <details className="mt-2 text-sm">
+                      <summary className="cursor-pointer text-primary">View saved answer</summary>
+                      <div className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-lg bg-muted p-3 text-xs">
+                        {n.answer}
+                      </div>
+                    </details>
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        onClick={() => {
+                          saved.notes.remove(n.savedAt);
+                          refresh();
+                        }}
+                        className="text-xs text-muted-foreground hover:text-destructive"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </Section>
+          )}
         </div>
       )}
     </div>
