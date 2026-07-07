@@ -100,11 +100,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "Smart Bharat AI" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Smart Bharat AI" },
+      { name: "twitter:title", content: "Smart Bharat AI — Your Intelligent Civic Companion" },
       {
         name: "twitter:description",
         content: "AI-powered civic companion for India. Schemes, complaints, documents, multilingual guidance.",
       },
+      { name: "description", content: "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents." },
+      { property: "og:description", content: "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents." },
+      { name: "twitter:description", content: "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b75faa-2f06-41c6-a2ec-8689edbe6f11/id-preview-057454b6--c12ac0cc-98a4-4b8a-9f8b-224c0321f41e.lovable.app-1783404808733.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b75faa-2f06-41c6-a2ec-8689edbe6f11/id-preview-057454b6--c12ac0cc-98a4-4b8a-9f8b-224c0321f41e.lovable.app-1783404808733.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
