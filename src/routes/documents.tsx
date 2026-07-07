@@ -119,15 +119,7 @@ function DocumentsPage() {
         <Button type="submit" variant="outline" disabled={!custom.trim() || busy}>Get guide</Button>
       </form>
 
-      {busy && (
-        <div className="mt-8 animate-pulse space-y-4 rounded-2xl border border-border/70 bg-card p-6">
-          <div className="h-5 w-1/3 rounded bg-muted" />
-          <div className="h-3 w-full rounded bg-muted" />
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[0, 1, 2].map((i) => <div key={i} className="h-24 rounded bg-muted" />)}
-          </div>
-        </div>
-      )}
+      {busy && <ProgressiveLoader stages={LOADING_STAGES.documents} className="mt-8" />}
 
       {guide && !busy && (
         <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 space-y-4">
