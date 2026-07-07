@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NextBestAction } from "@/components/next-best-action";
+import { ProgressiveLoader, LOADING_STAGES } from "@/components/progressive-loader";
 import { useLanguage } from "@/components/language-provider";
 import { recommendSchemes, type SchemeResult } from "@/lib/schemes.functions";
 import { saved } from "@/lib/local-store";
