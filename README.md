@@ -288,14 +288,41 @@ src
 # 🚀 Installation
 
 ```bash
-bun install
-
-bun dev
-
-bun test
-
-bun run build
+bun install       # install dependencies
+bun run dev       # start the dev server on http://localhost:8080
+bun run test      # run the Vitest suite
+bun run lint      # run ESLint
+bun run build     # production build
 ```
+
+# 🔐 Environment Variables
+
+Secrets live in the Lovable Cloud secret store, never in a committed `.env`.
+
+| Name              | Where set              | Purpose                                    |
+| ----------------- | ---------------------- | ------------------------------------------ |
+| `LOVABLE_API_KEY` | Lovable Cloud (server) | Auth for the Lovable AI Gateway (Gemini)   |
+
+Nothing sensitive is ever exposed to the browser bundle — all AI calls run
+inside TanStack server functions on Cloudflare Workers.
+
+# 🧪 Running Tests
+
+```bash
+bun run test          # single run
+bun run test:watch    # watch mode
+bunx vitest run --coverage   # with coverage (v8)
+```
+
+# 🚢 Deployment
+
+The project is a TanStack Start app targeting Cloudflare Workers via Nitro.
+On Lovable, pushing to `main` publishes to
+[smartbharat-ai.lovable.app](https://smartbharat-ai.lovable.app). For
+self-hosting, run `bun run build` and deploy the `.output` directory to any
+Workers-compatible edge runtime.
+
+
 
 
 # 🌱 Future Scope
