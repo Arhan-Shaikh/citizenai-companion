@@ -12,6 +12,7 @@ import { NextBestAction } from "@/components/next-best-action";
 import { useLanguage } from "@/components/language-provider";
 import { getDocumentGuide, type DocumentGuide } from "@/lib/documents.functions";
 import { saved, assistantSeed } from "@/lib/local-store";
+import { safeHttpUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/documents")({
   head: () => ({
