@@ -118,25 +118,24 @@ Constraints: 4-6 schemes, up to 4 benefits, up to 6 documents, up to 5 steps eac
     try {
       const result = await generateText({ model, prompt });
       text = result.text ?? "";
-      console.log("[schemes] gateway response length:", text.length);
+      log.debug("gateway response", { length: text.length });
     } catch (err) {
-      console.error("[schemes] gateway request failed:", err);
+      log.error("gateway request failed", err);
       throw err instanceof Error ? err : new Error("Scheme service unavailable");
     }
 
     if (!text.trim()) {
-      console.error("[schemes] empty response text from gateway");
+      log.error("empty response from gateway");
       throw new Error("The AI returned an empty response. Please try again.");
     }
 
     try {
       const parsed = extractJson(text);
       const normalized = normalize(parsed);
-      console.log("[schemes] parsed schemes:", normalized.schemes.length);
+      log.debug("parsed schemes", { count: normalized.schemes.length });
       return normalized;
     } catch (err) {
-      console.error("[schemes] JSON parse failed:", err, "\nRaw:", text.slice(0, 500));
-      // Do not throw — return what we can so the UI shows a helpful state.
+      log.error("JSON parse failed", { err, preview: text.slice(0, 500) });
       return { schemes: [], nextActions: [] };
     }
   });
