@@ -2,7 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { Loader2, Sparkles, ExternalLink, Bookmark, BookmarkCheck, CheckCircle2, ArrowRight } from "lucide-react";
+import {
+  Loader2,
+  Sparkles,
+  ExternalLink,
+  Bookmark,
+  BookmarkCheck,
+  CheckCircle2,
+  ArrowRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,20 +39,56 @@ export const Route = createFileRoute("/schemes")({
           "Get personalized Government of India scheme recommendations with eligibility, benefits, documents, and application steps — powered by Gemini.",
       },
       { property: "og:title", content: "Scheme Recommender — Smart Bharat AI" },
-      { property: "og:description", content: "AI-personalized central and state schemes for every citizen." },
+      {
+        property: "og:description",
+        content: "AI-personalized central and state schemes for every citizen.",
+      },
     ],
   }),
   component: SchemesPage,
 });
 
 const STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Delhi", "Goa", "Gujarat",
-  "Haryana", "Himachal Pradesh", "Jammu & Kashmir", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh",
-  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
-  "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Delhi",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jammu & Kashmir",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
 ];
 
-const TAGS = ["Student", "Senior Citizen", "Farmer", "Disabled", "Woman-headed household", "Unemployed"];
+const TAGS = [
+  "Student",
+  "Senior Citizen",
+  "Farmer",
+  "Disabled",
+  "Woman-headed household",
+  "Unemployed",
+];
 
 function SchemesPage() {
   const { language } = useLanguage();
@@ -58,10 +102,15 @@ function SchemesPage() {
   });
   const [result, setResult] = useState<SchemeResult | null>(null);
   const [busy, setBusy] = useState(false);
-  const [savedNames, setSavedNames] = useState<string[]>(() => saved.schemes.load().map((s) => s.scheme.name));
+  const [savedNames, setSavedNames] = useState<string[]>(() =>
+    saved.schemes.load().map((s) => s.scheme.name),
+  );
 
   const toggleTag = (t: string) =>
-    setForm((f) => ({ ...f, tags: f.tags.includes(t) ? f.tags.filter((x) => x !== t) : [...f.tags, t] }));
+    setForm((f) => ({
+      ...f,
+      tags: f.tags.includes(t) ? f.tags.filter((x) => x !== t) : [...f.tags, t],
+    }));
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,14 +145,19 @@ function SchemesPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <header className="mb-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-primary">Feature</p>
-        <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">Scheme Recommender</h1>
+        <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">
+          Scheme Recommender
+        </h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Tell us about you. Gemini scans central and state schemes and returns eligibility, benefits, documents and
-          application steps.
+          Tell us about you. Gemini scans central and state schemes and returns eligibility,
+          benefits, documents and application steps.
         </p>
       </header>
 
-      <form onSubmit={submit} className="grid gap-6 rounded-2xl border border-border/70 bg-card p-6 sm:grid-cols-2">
+      <form
+        onSubmit={submit}
+        className="grid gap-6 rounded-2xl border border-border/70 bg-card p-6 sm:grid-cols-2"
+      >
         <div className="space-y-2">
           <Label htmlFor="age">Age</Label>
           <Input
@@ -119,7 +173,9 @@ function SchemesPage() {
         <div className="space-y-2">
           <Label htmlFor="gender">Gender</Label>
           <Select value={form.gender} onValueChange={(v) => setForm((f) => ({ ...f, gender: v }))}>
-            <SelectTrigger id="gender"><SelectValue /></SelectTrigger>
+            <SelectTrigger id="gender">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="Female">Female</SelectItem>
               <SelectItem value="Male">Male</SelectItem>
@@ -131,9 +187,15 @@ function SchemesPage() {
         <div className="space-y-2">
           <Label htmlFor="state">State</Label>
           <Select value={form.state} onValueChange={(v) => setForm((f) => ({ ...f, state: v }))}>
-            <SelectTrigger id="state"><SelectValue /></SelectTrigger>
+            <SelectTrigger id="state">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {STATES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+              {STATES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -166,7 +228,9 @@ function SchemesPage() {
                 key={t}
                 className={cn(
                   "flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-sm transition-colors",
-                  form.tags.includes(t) ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background",
+                  form.tags.includes(t)
+                    ? "border-primary bg-primary/10 text-foreground"
+                    : "border-border bg-background",
                 )}
               >
                 <Checkbox
@@ -206,7 +270,9 @@ function SchemesPage() {
             >
               <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                 <div className="min-w-0">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground">{s.ministry}</p>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    {s.ministry}
+                  </p>
                   <h3 className="mt-1 text-xl font-semibold tracking-tight">{s.name}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{s.whyEligible}</p>
                 </div>
@@ -242,7 +308,6 @@ function SchemesPage() {
                   </a>
                 ) : null;
               })()}
-
             </motion.article>
           ))}
           <NextBestAction actions={result.nextActions} title="Continue your journey" />
@@ -256,8 +321,8 @@ function SchemesPage() {
           </div>
           <h2 className="mt-4 font-display text-2xl">Personalized in under 10 seconds</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-            Gemini scans hundreds of central and state schemes and returns only the ones you're eligible for — with
-            benefits, documents and exact steps.
+            Gemini scans hundreds of central and state schemes and returns only the ones you're
+            eligible for — with benefits, documents and exact steps.
           </p>
           <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Fill the form above to begin
@@ -268,7 +333,15 @@ function SchemesPage() {
   );
 }
 
-function Column({ title, items, numbered }: { title: string; items: string[]; numbered?: boolean }) {
+function Column({
+  title,
+  items,
+  numbered,
+}: {
+  title: string;
+  items: string[];
+  numbered?: boolean;
+}) {
   return (
     <div>
       <h4 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -276,7 +349,9 @@ function Column({ title, items, numbered }: { title: string; items: string[]; nu
       </h4>
       {numbered ? (
         <ol className="list-decimal space-y-1 pl-4 text-sm">
-          {items.map((it, i) => <li key={i}>{it}</li>)}
+          {items.map((it, i) => (
+            <li key={i}>{it}</li>
+          ))}
         </ol>
       ) : (
         <ul className="space-y-1 text-sm">
@@ -291,4 +366,3 @@ function Column({ title, items, numbered }: { title: string; items: string[]; nu
     </div>
   );
 }
-

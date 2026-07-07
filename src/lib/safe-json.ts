@@ -13,7 +13,10 @@
  * @throws Error when no JSON structure can be located or repaired.
  */
 export function extractJson(text: string): unknown {
-  let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  let cleaned = text
+    .replace(/```json\s*/gi, "")
+    .replace(/```\s*/g, "")
+    .trim();
   const start = cleaned.search(/[{[]/);
   if (start === -1) throw new Error("No JSON found in response");
   const openChar = cleaned[start];

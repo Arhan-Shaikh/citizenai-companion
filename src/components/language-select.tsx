@@ -1,12 +1,7 @@
 import { Globe } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { LANGUAGES, type LangCode } from "@/lib/prompt-templates";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 
 export function LanguageSelect() {
   const { language, setLanguage } = useLanguage();

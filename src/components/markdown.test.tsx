@@ -18,9 +18,7 @@ describe("Markdown", () => {
   });
 
   it("does not execute raw HTML inside markdown", () => {
-    const { container } = render(
-      <Markdown>{"<img src=x onerror=alert(1) />\n\ntext"}</Markdown>,
-    );
+    const { container } = render(<Markdown>{"<img src=x onerror=alert(1) />\n\ntext"}</Markdown>);
     expect(container.querySelector("img")).toBeNull();
   });
 

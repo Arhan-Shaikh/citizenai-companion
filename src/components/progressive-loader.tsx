@@ -36,7 +36,11 @@ export function ProgressiveLoader({
 
   if (variant === "inline") {
     return (
-      <div className={cn("flex items-center gap-2 text-sm text-muted-foreground", className)} role="status" aria-live="polite">
+      <div
+        className={cn("flex items-center gap-2 text-sm text-muted-foreground", className)}
+        role="status"
+        aria-live="polite"
+      >
         <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
         <span key={stages[idx]} className="text-foreground">
           {stages[idx]}
@@ -47,10 +51,7 @@ export function ProgressiveLoader({
 
   return (
     <div
-      className={cn(
-        "rounded-2xl border border-border/70 bg-card p-6",
-        className,
-      )}
+      className={cn("rounded-2xl border border-border/70 bg-card p-6", className)}
       role="status"
       aria-live="polite"
     >
@@ -105,9 +106,5 @@ export const LOADING_STAGES = {
     "Structuring a clear answer…",
     "Preparing next best actions…",
   ],
-  translating: [
-    "Reading original text…",
-    "Preserving meaning and tone…",
-    "Translating for you…",
-  ],
+  translating: ["Reading original text…", "Preserving meaning and tone…", "Translating for you…"],
 };
