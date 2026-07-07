@@ -59,6 +59,43 @@ function AssistantPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mediaRef = useRef<{ recorder: MediaRecorder; stream: MediaStream; chunks: Blob[] } | null>(null);
+  const composerRef = useRef<HTMLFormElement>(null);
+  const [kbInset, setKbInset] = useState(0);
+  const [composerH, setComposerH] = useState(160);
+
+  // Track mobile keyboard via visualViewport (iOS Safari & Chrome Android)
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKbInset(inset);
+      if (document.activeElement === textareaRef.current) {
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+        });
+      }
+    };
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    update();
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, []);
+
+  // Measure composer height so scroll area padding matches
+  useEffect(() => {
+    if (!composerRef.current) return;
+    const el = composerRef.current;
+    const measure = () => setComposerH(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
 
   // Load thread + seed on mount
   useEffect(() => {
@@ -180,6 +217,7 @@ function AssistantPage() {
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-4xl flex-col px-4 pt-6 sm:px-6">
+
       <header className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <img src={logo} alt="" width={40} height={40} className="h-10 w-10 shrink-0" />
@@ -207,9 +245,11 @@ function AssistantPage() {
       <div
         ref={scrollRef}
         className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-border/70 bg-card/50 p-4 sm:p-6"
+        style={{ paddingBottom: composerH + 16, scrollPaddingBottom: composerH + 16 }}
         aria-live="polite"
         aria-label="Conversation"
       >
+
         {messages.length === 0 && !busy && <EmptyState onPick={(t) => send(t)} />}
 
         <AnimatePresence initial={false}>
@@ -318,13 +358,20 @@ function AssistantPage() {
       </div>
 
       <form
+        ref={composerRef}
         onSubmit={(e) => {
           e.preventDefault();
           send(input);
         }}
-        className="sticky bottom-0 mt-4 pb-4"
+        className="fixed left-0 right-0 z-40 mx-auto w-full max-w-4xl px-4 pb-3 pt-2 sm:px-6"
+        style={{
+          bottom: kbInset,
+          paddingBottom: kbInset > 0 ? 12 : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+          transition: "bottom 150ms ease-out",
+        }}
       >
-        <div className="rounded-2xl border border-border/70 bg-card p-2 shadow-lift">
+        <div className="rounded-2xl border border-border/70 bg-card/95 p-2 shadow-lift backdrop-blur supports-[backdrop-filter]:bg-card/80">
+
           <Textarea
             ref={textareaRef}
             value={input}
