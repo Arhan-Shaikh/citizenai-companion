@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,19 +37,10 @@ export function ProgressiveLoader({
   if (variant === "inline") {
     return (
       <div className={cn("flex items-center gap-2 text-sm text-muted-foreground", className)} role="status" aria-live="polite">
-        <Sparkles className="h-4 w-4 shrink-0 animate-pulse text-primary" aria-hidden />
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={idx}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.25 }}
-            className="shimmer-text"
-          >
-            {stages[idx]}
-          </motion.span>
-        </AnimatePresence>
+        <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+        <span key={stages[idx]} className="text-foreground">
+          {stages[idx]}
+        </span>
       </div>
     );
   }
@@ -66,25 +56,16 @@ export function ProgressiveLoader({
     >
       <div className="flex items-center gap-3">
         <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-          <Sparkles className="h-4 w-4 animate-pulse" aria-hidden />
+          <Sparkles className="h-4 w-4" aria-hidden />
         </span>
         <div className="min-w-0 flex-1">
-          <AnimatePresence mode="wait">
-            <motion.p
-              key={idx}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.25 }}
-              className="shimmer-text truncate text-sm font-medium"
-            >
-              {stages[idx]}
-            </motion.p>
-          </AnimatePresence>
+          <p key={stages[idx]} className="truncate text-sm font-medium text-foreground">
+            {stages[idx]}
+          </p>
           <div className="mt-3 flex gap-1">
-            {stages.map((_, i) => (
+            {stages.map((stage, i) => (
               <span
-                key={i}
+                key={stage}
                 className={cn(
                   "h-1 flex-1 rounded-full bg-muted transition-colors",
                   i <= idx && "bg-primary/70",
