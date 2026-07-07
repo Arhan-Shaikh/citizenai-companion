@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { Loader2, Sparkles, ExternalLink, Bookmark, BookmarkCheck, CheckCircle2, FileText, ArrowRight } from "lucide-react";
+import { Loader2, Sparkles, ExternalLink, Bookmark, BookmarkCheck, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
