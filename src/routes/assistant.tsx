@@ -358,13 +358,20 @@ function AssistantPage() {
       </div>
 
       <form
+        ref={composerRef}
         onSubmit={(e) => {
           e.preventDefault();
           send(input);
         }}
-        className="sticky bottom-0 mt-4 pb-4"
+        className="fixed left-0 right-0 z-40 mx-auto w-full max-w-4xl px-4 pb-3 pt-2 sm:px-6"
+        style={{
+          bottom: kbInset,
+          paddingBottom: kbInset > 0 ? 12 : "calc(env(safe-area-inset-bottom, 0px) + 12px)",
+          transition: "bottom 150ms ease-out",
+        }}
       >
-        <div className="rounded-2xl border border-border/70 bg-card p-2 shadow-lift">
+        <div className="rounded-2xl border border-border/70 bg-card/95 p-2 shadow-lift backdrop-blur supports-[backdrop-filter]:bg-card/80">
+
           <Textarea
             ref={textareaRef}
             value={input}
