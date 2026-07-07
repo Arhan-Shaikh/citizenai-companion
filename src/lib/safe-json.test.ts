@@ -19,9 +19,10 @@ describe("safe-json", () => {
       expect(extractJson('{"a":1,}')).toEqual({ a: 1 });
     });
 
-    it("balances missing closing braces", () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      expect((extractJson('{"a":{"b":1') as any).a.b).toBe(1);
+    it("balances mismatched trailing braces via repair pass", () => {
+      // Outer terminator present but inner object is missing its closer.
+      const result = extractJson('{"a":{"b":1}') as { a: { b: number } };
+      expect(result.a.b).toBe(1);
     });
 
     it("throws when no JSON is present", () => {
