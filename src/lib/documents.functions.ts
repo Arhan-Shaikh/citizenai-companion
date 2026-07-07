@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateObject, NoObjectGeneratedError } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { CHAT_MODEL, createGateway } from "./ai-gateway.server";
 import { langLabel } from "./prompt-templates";
@@ -9,67 +9,150 @@ const DocInput = z.object({
   language: z.string().max(10).default("en"),
 });
 
-const GuideSchema = z.object({
-  summary: z.string(),
-  eligibility: z.array(z.string()),
-  requiredDocuments: z.array(z.string()),
-  fees: z.string(),
-  timeline: z.string(),
-  applicationSteps: z.array(z.string()),
-  commonMistakes: z.array(z.string()),
-  tips: z.array(z.string()),
-  officialPortal: z.string().nullable(),
-  nextActions: z.array(
-    z.object({
-      label: z.string(),
-      kind: z.enum(["assistant", "schemes", "complaints"]),
-      payload: z.string(),
-    }),
-  ),
-});
+export type NextAction = {
+  label: string;
+  kind: "assistant" | "schemes" | "complaints";
+  payload: string;
+};
 
-export type DocumentGuide = z.infer<typeof GuideSchema>;
+export type DocumentGuide = {
+  summary: string;
+  eligibility: string[];
+  requiredDocuments: string[];
+  fees: string;
+  timeline: string;
+  applicationSteps: string[];
+  commonMistakes: string[];
+  tips: string[];
+  officialPortal: string | null;
+  nextActions: NextAction[];
+};
+
+function extractJson(text: string): unknown {
+  let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  const start = cleaned.search(/[{[]/);
+  if (start === -1) throw new Error("No JSON found in response");
+  const openChar = cleaned[start];
+  const closeChar = openChar === "[" ? "]" : "}";
+  const end = cleaned.lastIndexOf(closeChar);
+  if (end === -1 || end < start) throw new Error("No JSON terminator found");
+  cleaned = cleaned.substring(start, end + 1);
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    let repaired = cleaned
+      .replace(/,\s*}/g, "}")
+      .replace(/,\s*]/g, "]")
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+    let braces = 0;
+    let brackets = 0;
+    for (const c of repaired) {
+      if (c === "{") braces++;
+      else if (c === "}") braces--;
+      else if (c === "[") brackets++;
+      else if (c === "]") brackets--;
+    }
+    while (brackets-- > 0) repaired += "]";
+    while (braces-- > 0) repaired += "}";
+    return JSON.parse(repaired);
+  }
+}
+
+function asString(v: unknown, fallback = ""): string {
+  return typeof v === "string" ? v : fallback;
+}
+function asStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.map((x) => (typeof x === "string" ? x : String(x ?? ""))).filter(Boolean);
+}
+
+function normalize(raw: unknown, docType: string): DocumentGuide {
+  const r = (raw ?? {}) as Record<string, unknown>;
+  const link = asString(r.officialPortal, "").trim();
+  const naRaw = Array.isArray(r.nextActions) ? r.nextActions : [];
+  const nextActions: NextAction[] = naRaw
+    .map((a) => {
+      const x = (a ?? {}) as Record<string, unknown>;
+      const kind = asString(x.kind) as NextAction["kind"];
+      return {
+        label: asString(x.label).trim(),
+        kind: (["assistant", "schemes", "complaints"] as const).includes(kind) ? kind : "assistant",
+        payload: asString(x.payload).trim(),
+      };
+    })
+    .filter((a) => a.label && a.payload)
+    .slice(0, 3);
+
+  return {
+    summary: asString(r.summary).trim() || `Guide for ${docType}.`,
+    eligibility: asStringArray(r.eligibility),
+    requiredDocuments: asStringArray(r.requiredDocuments),
+    fees: asString(r.fees).trim() || "Varies — check the official portal.",
+    timeline: asString(r.timeline).trim() || "Varies — check the official portal.",
+    applicationSteps: asStringArray(r.applicationSteps),
+    commonMistakes: asStringArray(r.commonMistakes),
+    tips: asStringArray(r.tips),
+    officialPortal: link && /^https?:\/\//i.test(link) ? link : null,
+    nextActions,
+  };
+}
 
 export const getDocumentGuide = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => DocInput.parse(data))
   .handler(async ({ data }): Promise<DocumentGuide> => {
+    console.log("[documents] request:", data.documentType, "lang:", data.language);
     const gateway = createGateway();
     const model = gateway(CHAT_MODEL);
     const lang = langLabel(data.language);
 
-    const prompt = `Produce a citizen-facing application guide for obtaining "${data.documentType}" in India. Be precise and factual. Use current, well-known official processes.
+    const prompt = `You are an expert on Indian government documents. Produce a citizen-facing application guide for obtaining "${data.documentType}" in India. Be precise and factual.
 
-Return:
-- summary: 1-2 sentences describing what this document is and why it matters.
-- eligibility: up to 5 clear eligibility bullets.
-- requiredDocuments: up to 8 documents/proofs typically needed.
-- fees: plain-language fee summary (e.g. "INR 1,500 for a 36-page normal passport; INR 2,000 for tatkaal"). If fees vary by category, mention it briefly.
-- timeline: realistic processing time (e.g. "15-30 days for normal, 3-7 days for tatkaal").
-- applicationSteps: 4-7 numbered actions.
-- commonMistakes: up to 5 pitfalls citizens frequently make.
-- tips: up to 5 insider tips.
-- officialPortal: canonical Government of India URL (e.g. https://passportindia.gov.in). Return null if unsure — never invent.
-- nextActions: exactly 3. Kinds:
-  * "assistant" — payload = a follow-up question
-  * "schemes" — payload = a scheme category to explore
-  * "complaints" — payload = a common complaint scenario related to this doc
+Reply in ${lang} for all user-facing text (keep the officialPortal URL in English).
 
-Write everything in ${lang}. Keep the officialPortal URL as-is in English.`;
+Return ONLY a valid JSON object (no markdown, no code fences, no commentary) exactly matching this shape:
+{
+  "summary": "1-2 sentences",
+  "eligibility": ["string", "..."],
+  "requiredDocuments": ["string", "..."],
+  "fees": "plain-language fee summary",
+  "timeline": "realistic processing time",
+  "applicationSteps": ["string", "..."],
+  "commonMistakes": ["string", "..."],
+  "tips": ["string", "..."],
+  "officialPortal": "https://... or null",
+  "nextActions": [
+    { "label": "short text", "kind": "assistant" | "schemes" | "complaints", "payload": "string" }
+  ]
+}
+
+Constraints: up to 5 eligibility, up to 8 requiredDocuments, 4-7 applicationSteps, up to 5 commonMistakes, up to 5 tips. Exactly 3 nextActions. Never invent URLs — use null when unsure. Output JSON only.`;
+
+    console.log("[documents] prompt built, length:", prompt.length);
+
+    let text = "";
+    try {
+      const result = await generateText({ model, prompt });
+      text = result.text ?? "";
+      console.log("[documents] gateway response length:", text.length);
+    } catch (err) {
+      console.error("[documents] gateway request failed:", err);
+      throw err instanceof Error ? err : new Error("Document service unavailable");
+    }
+
+    if (!text.trim()) {
+      console.error("[documents] empty response from gateway");
+      throw new Error("The AI returned an empty response. Please try again.");
+    }
 
     try {
-      const { object } = await generateObject({
-        model,
-        prompt,
-        schema: GuideSchema,
-      });
-      return {
-        ...object,
-        nextActions: object.nextActions.slice(0, 3),
-      };
-    } catch (error) {
-      if (NoObjectGeneratedError.isInstance(error)) {
-        throw new Error("Could not generate document guide. Please try again.");
-      }
-      throw error;
+      const parsed = extractJson(text);
+      const guide = normalize(parsed, data.documentType);
+      console.log("[documents] parsed OK. steps:", guide.applicationSteps.length, "docs:", guide.requiredDocuments.length);
+      return guide;
+    } catch (err) {
+      console.error("[documents] JSON parse failed:", err, "\nRaw:", text.slice(0, 800));
+      // Fallback: return summary-only guide from raw text so UI shows something useful.
+      return normalize({ summary: text.slice(0, 400) }, data.documentType);
     }
   });
