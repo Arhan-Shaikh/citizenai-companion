@@ -2,14 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { Loader2, Mic, MicOff, Send, Sparkles, Trash2, Volume2, Copy, User } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  Loader2, Mic, MicOff, Send, Sparkles, Trash2, Volume2, Copy, User,
+  Languages, FileText, Landmark, MessageSquarePlus, Bookmark,
+} from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Markdown } from "@/components/markdown";
+import { ProgressiveLoader, LOADING_STAGES } from "@/components/progressive-loader";
 import { useLanguage } from "@/components/language-provider";
 import { askAssistant, type ChatMessage } from "@/lib/chat.functions";
-import { thread as threadStore, assistantSeed } from "@/lib/local-store";
+import { translateText } from "@/lib/complaints.functions";
+import { thread as threadStore, assistantSeed, saved } from "@/lib/local-store";
 import { LANGUAGES } from "@/lib/prompt-templates";
 import { cn } from "@/lib/utils";
 
