@@ -8,6 +8,7 @@ const KEYS = {
   schemes: "sba.saved.schemes.v1",
   complaints: "sba.saved.complaints.v1",
   documents: "sba.saved.documents.v1",
+  notes: "sba.saved.notes.v1",
   language: "sba.language.v1",
   theme: "sba.theme.v1",
   seed: "sba.assistant.seed.v1",
