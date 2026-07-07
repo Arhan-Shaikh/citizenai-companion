@@ -94,31 +94,30 @@ Return ONLY a valid JSON object (no markdown, no code fences, no commentary) exa
 
 Constraints: up to 5 eligibility, up to 8 requiredDocuments, 4-7 applicationSteps, up to 5 commonMistakes, up to 5 tips. Exactly 3 nextActions. Never invent URLs — use null when unsure. Output JSON only.`;
 
-    console.log("[documents] prompt built, length:", prompt.length);
+    log.debug("prompt built", { length: prompt.length });
 
     let text = "";
     try {
       const result = await generateText({ model, prompt });
       text = result.text ?? "";
-      console.log("[documents] gateway response length:", text.length);
+      log.debug("gateway response", { length: text.length });
     } catch (err) {
-      console.error("[documents] gateway request failed:", err);
+      log.error("gateway request failed", err);
       throw err instanceof Error ? err : new Error("Document service unavailable");
     }
 
     if (!text.trim()) {
-      console.error("[documents] empty response from gateway");
+      log.error("empty response from gateway");
       throw new Error("The AI returned an empty response. Please try again.");
     }
 
     try {
       const parsed = extractJson(text);
       const guide = normalize(parsed, data.documentType);
-      console.log("[documents] parsed OK. steps:", guide.applicationSteps.length, "docs:", guide.requiredDocuments.length);
+      log.debug("parsed", { steps: guide.applicationSteps.length, docs: guide.requiredDocuments.length });
       return guide;
     } catch (err) {
-      console.error("[documents] JSON parse failed:", err, "\nRaw:", text.slice(0, 800));
-      // Fallback: return summary-only guide from raw text so UI shows something useful.
+      log.error("JSON parse failed", { err, preview: text.slice(0, 800) });
       return normalize({ summary: text.slice(0, 400) }, data.documentType);
     }
   });
