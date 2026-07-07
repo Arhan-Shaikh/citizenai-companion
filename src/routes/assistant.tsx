@@ -245,9 +245,11 @@ function AssistantPage() {
       <div
         ref={scrollRef}
         className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-border/70 bg-card/50 p-4 sm:p-6"
+        style={{ paddingBottom: composerH + 16, scrollPaddingBottom: composerH + 16 }}
         aria-live="polite"
         aria-label="Conversation"
       >
+
         {messages.length === 0 && !busy && <EmptyState onPick={(t) => send(t)} />}
 
         <AnimatePresence initial={false}>
