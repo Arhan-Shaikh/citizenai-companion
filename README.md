@@ -103,10 +103,20 @@ Every AI call follows the same recipe:
 
 ```bash
 bun install
-bun dev
+bun dev            # start Vite dev server
+bun test           # run the Vitest suite once
+bun test:watch     # watch mode
+bun run build      # production build
+bun run lint       # ESLint
 ```
 
 The `LOVABLE_API_KEY` environment variable is auto-provisioned by Lovable. To run outside Lovable, set it manually.
+
+## 🧪 Testing
+
+Unit and component tests are written with **Vitest** + **React Testing Library** and run in a `jsdom` environment. Setup lives in `src/test/setup.ts` and pulls in `@testing-library/jest-dom` matchers.
+
+Current coverage focuses on the fragile bits: LLM JSON parsing/repair (`safe-json`), URL sanitization (`safeHttpUrl`), the officer persona template, on-device storage helpers, and the Theme/Language providers. Add new specs alongside their source as `*.test.ts` / `*.test.tsx`.
 
 ## 🗺 Future Scope
 

@@ -3,6 +3,10 @@ import { generateText } from "ai";
 import { z } from "zod";
 import { CHAT_MODEL, createGateway } from "./ai-gateway.server";
 import { langLabel } from "./prompt-templates";
+import { asString, asStringArray, extractJson } from "./safe-json";
+import { createLogger } from "./logger";
+
+const log = createLogger("documents");
 
 const DocInput = z.object({
   documentType: z.string().min(2).max(80),
@@ -28,44 +32,6 @@ export type DocumentGuide = {
   nextActions: NextAction[];
 };
 
-function extractJson(text: string): unknown {
-  let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
-  const start = cleaned.search(/[{[]/);
-  if (start === -1) throw new Error("No JSON found in response");
-  const openChar = cleaned[start];
-  const closeChar = openChar === "[" ? "]" : "}";
-  const end = cleaned.lastIndexOf(closeChar);
-  if (end === -1 || end < start) throw new Error("No JSON terminator found");
-  cleaned = cleaned.substring(start, end + 1);
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    let repaired = cleaned
-      .replace(/,\s*}/g, "}")
-      .replace(/,\s*]/g, "]")
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
-    let braces = 0;
-    let brackets = 0;
-    for (const c of repaired) {
-      if (c === "{") braces++;
-      else if (c === "}") braces--;
-      else if (c === "[") brackets++;
-      else if (c === "]") brackets--;
-    }
-    while (brackets-- > 0) repaired += "]";
-    while (braces-- > 0) repaired += "}";
-    return JSON.parse(repaired);
-  }
-}
-
-function asString(v: unknown, fallback = ""): string {
-  return typeof v === "string" ? v : fallback;
-}
-function asStringArray(v: unknown): string[] {
-  if (!Array.isArray(v)) return [];
-  return v.map((x) => (typeof x === "string" ? x : String(x ?? ""))).filter(Boolean);
-}
 
 function normalize(raw: unknown, docType: string): DocumentGuide {
   const r = (raw ?? {}) as Record<string, unknown>;
@@ -128,31 +94,30 @@ Return ONLY a valid JSON object (no markdown, no code fences, no commentary) exa
 
 Constraints: up to 5 eligibility, up to 8 requiredDocuments, 4-7 applicationSteps, up to 5 commonMistakes, up to 5 tips. Exactly 3 nextActions. Never invent URLs — use null when unsure. Output JSON only.`;
 
-    console.log("[documents] prompt built, length:", prompt.length);
+    log.debug("prompt built", { length: prompt.length });
 
     let text = "";
     try {
       const result = await generateText({ model, prompt });
       text = result.text ?? "";
-      console.log("[documents] gateway response length:", text.length);
+      log.debug("gateway response", { length: text.length });
     } catch (err) {
-      console.error("[documents] gateway request failed:", err);
+      log.error("gateway request failed", err);
       throw err instanceof Error ? err : new Error("Document service unavailable");
     }
 
     if (!text.trim()) {
-      console.error("[documents] empty response from gateway");
+      log.error("empty response from gateway");
       throw new Error("The AI returned an empty response. Please try again.");
     }
 
     try {
       const parsed = extractJson(text);
       const guide = normalize(parsed, data.documentType);
-      console.log("[documents] parsed OK. steps:", guide.applicationSteps.length, "docs:", guide.requiredDocuments.length);
+      log.debug("parsed", { steps: guide.applicationSteps.length, docs: guide.requiredDocuments.length });
       return guide;
     } catch (err) {
-      console.error("[documents] JSON parse failed:", err, "\nRaw:", text.slice(0, 800));
-      // Fallback: return summary-only guide from raw text so UI shows something useful.
+      log.error("JSON parse failed", { err, preview: text.slice(0, 800) });
       return normalize({ summary: text.slice(0, 400) }, data.documentType);
     }
   });

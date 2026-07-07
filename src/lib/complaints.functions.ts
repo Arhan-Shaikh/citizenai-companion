@@ -3,6 +3,10 @@ import { generateText } from "ai";
 import { z } from "zod";
 import { CHAT_MODEL, createGateway } from "./ai-gateway.server";
 import { langLabel } from "./prompt-templates";
+import { asClampedInt, asString, asStringArray, extractJson } from "./safe-json";
+import { createLogger } from "./logger";
+
+const log = createLogger("complaints");
 
 const GenerateInput = z.object({
   description: z.string().min(5).max(2000),
@@ -28,48 +32,6 @@ export type ComplaintResult = {
   impactScore: number;
   nextActions: NextComplaintAction[];
 };
-
-function extractJson(text: string): unknown {
-  let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
-  const start = cleaned.search(/[{[]/);
-  if (start === -1) throw new Error("No JSON found in response");
-  const openChar = cleaned[start];
-  const closeChar = openChar === "[" ? "]" : "}";
-  const end = cleaned.lastIndexOf(closeChar);
-  if (end === -1 || end < start) throw new Error("No JSON terminator found");
-  cleaned = cleaned.substring(start, end + 1);
-  try {
-    return JSON.parse(cleaned);
-  } catch {
-    let repaired = cleaned
-      .replace(/,\s*}/g, "}")
-      .replace(/,\s*]/g, "]")
-      // eslint-disable-next-line no-control-regex
-      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
-    let braces = 0;
-    let brackets = 0;
-    for (const c of repaired) {
-      if (c === "{") braces++;
-      else if (c === "}") braces--;
-      else if (c === "[") brackets++;
-      else if (c === "]") brackets--;
-    }
-    while (brackets-- > 0) repaired += "]";
-    while (braces-- > 0) repaired += "}";
-    return JSON.parse(repaired);
-  }
-}
-
-function asString(v: unknown, fallback = ""): string {
-  if (typeof v === "string") return v;
-  if (typeof v === "number" || typeof v === "boolean") return String(v);
-  return fallback;
-}
-
-function asStringArray(v: unknown): string[] {
-  if (!Array.isArray(v)) return [];
-  return v.map((x) => (typeof x === "string" ? x : String(x ?? ""))).filter((s) => s.trim().length > 0);
-}
 
 function asPriority(v: unknown): ComplaintResult["priority"] {
   const s = asString(v).trim().toLowerCase();
@@ -148,9 +110,7 @@ function normalize(raw: unknown, description: string): ComplaintResult {
     nextActions.push(defaults[nextActions.length]);
   }
 
-  const impactRaw = obj.impactScore;
-  const impactScore =
-    typeof impactRaw === "number" ? Math.max(0, Math.min(100, Math.round(impactRaw))) : 60;
+  const impactScore = asClampedInt(obj.impactScore, 0, 100, 60);
 
   const subject = asString(obj.subject).trim() || description.slice(0, 100);
   const body = asString(obj.body).trim() || asString(obj.complaintBody).trim() || description;
@@ -204,33 +164,32 @@ nextActions: exactly 3 items. kinds:
 
 Write subject, body, expectedImpact in ${lang}. Keep category, department, priority in English. Output JSON only.`;
 
-    console.log("[complaints] prompt length:", prompt.length);
+    log.debug("prompt built", { length: prompt.length });
 
     let text = "";
     try {
       const result = await generateText({ model, prompt });
       text = result.text ?? "";
-      console.log("[complaints] raw response length:", text.length);
-      console.log("[complaints] raw response preview:", text.slice(0, 400));
+      log.debug("gateway response", { length: text.length });
     } catch (err) {
-      console.error("[complaints] gateway request failed:", err);
+      log.error("gateway request failed", err);
       throw new Error("Complaint service is temporarily unavailable. Please try again in a moment.");
     }
 
     if (!text.trim()) {
-      console.error("[complaints] empty response from gateway");
+      log.error("empty response from gateway");
       throw new Error("The AI returned an empty response. Please try again.");
     }
 
     try {
       const parsed = extractJson(text);
       const normalized = normalize(parsed, data.description);
-      console.log("[complaints] parsed subject:", normalized.subject);
+      log.debug("parsed", { subject: normalized.subject });
       return normalized;
     } catch (err) {
-      console.warn("[complaints] JSON parse failed, falling back to text extraction:", err);
+      log.warn("JSON parse failed; falling back to text extraction", err);
       const fallback = fallbackParse(text, data.description);
-      console.log("[complaints] fallback subject:", fallback.subject);
+      log.debug("fallback subject", { subject: fallback.subject });
       return fallback;
     }
   });
