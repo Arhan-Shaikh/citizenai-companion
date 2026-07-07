@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NextBestAction } from "@/components/next-best-action";
+import { ProgressiveLoader, LOADING_STAGES } from "@/components/progressive-loader";
 import { useLanguage } from "@/components/language-provider";
 import { getDocumentGuide, type DocumentGuide } from "@/lib/documents.functions";
 import { saved, assistantSeed } from "@/lib/local-store";
