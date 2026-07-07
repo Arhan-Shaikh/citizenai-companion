@@ -217,6 +217,7 @@ function AssistantPage() {
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-4xl flex-col px-4 pt-6 sm:px-6">
+
       <header className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <img src={logo} alt="" width={40} height={40} className="h-10 w-10 shrink-0" />
