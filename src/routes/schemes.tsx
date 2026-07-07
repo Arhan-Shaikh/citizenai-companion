@@ -188,7 +188,7 @@ function SchemesPage() {
         </div>
       </form>
 
-      {busy && <SkeletonList />}
+      {busy && <ProgressiveLoader stages={LOADING_STAGES.schemes} className="mt-8" />}
 
       {result && (
         <div className="mt-8 space-y-4">
