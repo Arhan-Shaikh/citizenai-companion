@@ -59,6 +59,43 @@ function AssistantPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mediaRef = useRef<{ recorder: MediaRecorder; stream: MediaStream; chunks: Blob[] } | null>(null);
+  const composerRef = useRef<HTMLFormElement>(null);
+  const [kbInset, setKbInset] = useState(0);
+  const [composerH, setComposerH] = useState(160);
+
+  // Track mobile keyboard via visualViewport (iOS Safari & Chrome Android)
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKbInset(inset);
+      if (document.activeElement === textareaRef.current) {
+        requestAnimationFrame(() => {
+          scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+        });
+      }
+    };
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    update();
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, []);
+
+  // Measure composer height so scroll area padding matches
+  useEffect(() => {
+    if (!composerRef.current) return;
+    const el = composerRef.current;
+    const measure = () => setComposerH(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
 
   // Load thread + seed on mount
   useEffect(() => {
