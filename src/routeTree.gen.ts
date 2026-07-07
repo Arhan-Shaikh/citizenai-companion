@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SchemesRouteImport } from './routes/schemes'
+import { Route as MySpaceRouteImport } from './routes/my-space'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as AssistantRouteImport } from './routes/assistant'
@@ -19,6 +20,11 @@ import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 const SchemesRoute = SchemesRouteImport.update({
   id: '/schemes',
   path: '/schemes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MySpaceRoute = MySpaceRouteImport.update({
+  id: '/my-space',
+  path: '/my-space',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocumentsRoute = DocumentsRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AssistantRoute
   '/complaints': typeof ComplaintsRoute
   '/documents': typeof DocumentsRoute
+  '/my-space': typeof MySpaceRoute
   '/schemes': typeof SchemesRoute
   '/api/transcribe': typeof ApiTranscribeRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/assistant': typeof AssistantRoute
   '/complaints': typeof ComplaintsRoute
   '/documents': typeof DocumentsRoute
+  '/my-space': typeof MySpaceRoute
   '/schemes': typeof SchemesRoute
   '/api/transcribe': typeof ApiTranscribeRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/assistant': typeof AssistantRoute
   '/complaints': typeof ComplaintsRoute
   '/documents': typeof DocumentsRoute
+  '/my-space': typeof MySpaceRoute
   '/schemes': typeof SchemesRoute
   '/api/transcribe': typeof ApiTranscribeRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/complaints'
     | '/documents'
+    | '/my-space'
     | '/schemes'
     | '/api/transcribe'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/complaints'
     | '/documents'
+    | '/my-space'
     | '/schemes'
     | '/api/transcribe'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/complaints'
     | '/documents'
+    | '/my-space'
     | '/schemes'
     | '/api/transcribe'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   AssistantRoute: typeof AssistantRoute
   ComplaintsRoute: typeof ComplaintsRoute
   DocumentsRoute: typeof DocumentsRoute
+  MySpaceRoute: typeof MySpaceRoute
   SchemesRoute: typeof SchemesRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
 }
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/schemes'
       fullPath: '/schemes'
       preLoaderRoute: typeof SchemesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-space': {
+      id: '/my-space'
+      path: '/my-space'
+      fullPath: '/my-space'
+      preLoaderRoute: typeof MySpaceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/documents': {
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AssistantRoute: AssistantRoute,
   ComplaintsRoute: ComplaintsRoute,
   DocumentsRoute: DocumentsRoute,
+  MySpaceRoute: MySpaceRoute,
   SchemesRoute: SchemesRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
 }

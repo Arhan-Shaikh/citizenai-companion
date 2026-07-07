@@ -1,0 +1,18 @@
+# Smart Bharat AI
+
+> AI-powered civic companion for India. Access government schemes, generate professional complaints, understand documents, and get 24/7 multilingual guidance powered by Google Gemini.
+
+Smart Bharat AI helps Indian citizens navigate government services through a virtual government officer available in 9 Indian languages. Every AI response is structured (Summary, Steps, Documents, Warnings, Tips, Useful Links) and ends with a Next Best Action.
+
+## Pages
+
+- [Home](/): Product overview, features, and how it works.
+- [AI Civic Companion](/assistant): Officer-style chat assistant with voice input and 9 Indian languages.
+- [Scheme Recommender](/schemes): Personalized central and state scheme recommendations.
+- [Complaint Generator](/complaints): Turn plain descriptions into CPGRAMS-ready complaints.
+- [Document Assistant](/documents): Guides for Aadhaar, PAN, Passport, DL, Voter ID and more.
+- [My Space](/my-space): Local, private dashboard for saved items.
+
+## Optional
+
+- Roadmap: interactive civic issue map, Impact Score analytics, WhatsApp bot, state-specific deep-links.
