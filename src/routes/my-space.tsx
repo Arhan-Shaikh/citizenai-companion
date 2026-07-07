@@ -1,7 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bookmark, Download, FileText, MessageSquare, Sparkles, Trash2, Upload, StickyNote } from "lucide-react";
+import {
+  Bookmark,
+  Download,
+  FileText,
+  MessageSquare,
+  Sparkles,
+  Trash2,
+  Upload,
+  StickyNote,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   clearAllData,
@@ -59,7 +68,12 @@ function MySpacePage() {
   };
 
   const clearAll = () => {
-    if (!confirm("Delete all saved schemes, complaints, documents and the assistant thread? This cannot be undone.")) return;
+    if (
+      !confirm(
+        "Delete all saved schemes, complaints, documents and the assistant thread? This cannot be undone.",
+      )
+    )
+      return;
     clearAllData();
     refresh();
     toast.success("All data cleared");
@@ -70,16 +84,30 @@ function MySpacePage() {
       <header className="mb-8 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">Your data</p>
-          <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">My Space</h1>
+          <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">
+            My Space
+          </h1>
           <p className="mt-2 max-w-2xl text-muted-foreground">
             Private, on-device. Nothing leaves your browser unless you export it.
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
-          <Button variant="outline" size="sm" onClick={exportJson} disabled={totalItems === 0} className="gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportJson}
+            disabled={totalItems === 0}
+            className="gap-1.5"
+          >
             <Upload className="h-3.5 w-3.5" /> Export
           </Button>
-          <Button variant="outline" size="sm" onClick={clearAll} disabled={totalItems === 0} className="gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={clearAll}
+            disabled={totalItems === 0}
+            className="gap-1.5"
+          >
             <Trash2 className="h-3.5 w-3.5" /> Clear all
           </Button>
         </div>
@@ -93,10 +121,17 @@ function MySpacePage() {
             <Section title="Saved schemes" count={schemes.length} icon={Sparkles}>
               <div className="grid gap-3 md:grid-cols-2">
                 {schemes.map((s) => (
-                  <article key={s.scheme.name} className="rounded-2xl border border-border/70 bg-card p-4">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{s.scheme.ministry}</p>
+                  <article
+                    key={s.scheme.name}
+                    className="rounded-2xl border border-border/70 bg-card p-4"
+                  >
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                      {s.scheme.ministry}
+                    </p>
                     <h3 className="mt-1 truncate text-base font-semibold">{s.scheme.name}</h3>
-                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{s.scheme.whyEligible}</p>
+                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                      {s.scheme.whyEligible}
+                    </p>
                     <div className="mt-3 flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
                         {new Date(s.savedAt).toLocaleDateString()}
@@ -122,14 +157,21 @@ function MySpacePage() {
             <Section title="Saved complaints" count={complaints.length} icon={FileText}>
               <div className="space-y-3">
                 {complaints.map((c) => (
-                  <article key={c.savedAt} className="rounded-2xl border border-border/70 bg-card p-4">
+                  <article
+                    key={c.savedAt}
+                    className="rounded-2xl border border-border/70 bg-card p-4"
+                  >
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                       <div className="min-w-0">
                         <p className="text-xs uppercase tracking-wider text-muted-foreground">
                           {c.complaint.category} · {c.complaint.priority}
                         </p>
-                        <h3 className="mt-1 truncate text-base font-semibold">{c.complaint.subject}</h3>
-                        <p className="mt-1 truncate text-sm text-muted-foreground">To: {c.complaint.department}</p>
+                        <h3 className="mt-1 truncate text-base font-semibold">
+                          {c.complaint.subject}
+                        </h3>
+                        <p className="mt-1 truncate text-sm text-muted-foreground">
+                          To: {c.complaint.department}
+                        </p>
                       </div>
                       <button
                         onClick={() => {
@@ -157,9 +199,14 @@ function MySpacePage() {
             <Section title="Saved document guides" count={docs.length} icon={FileText}>
               <div className="grid gap-3 md:grid-cols-2">
                 {docs.map((d) => (
-                  <article key={d.documentType} className="rounded-2xl border border-border/70 bg-card p-4">
+                  <article
+                    key={d.documentType}
+                    className="rounded-2xl border border-border/70 bg-card p-4"
+                  >
                     <h3 className="text-base font-semibold">{d.documentType}</h3>
-                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{d.guide.summary}</p>
+                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                      {d.guide.summary}
+                    </p>
                     <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
                       <span>⏱ {d.guide.timeline}</span>
                       <span>₹ {d.guide.fees}</span>
@@ -188,7 +235,10 @@ function MySpacePage() {
             <Section title="Saved answers" count={notes.length} icon={StickyNote}>
               <div className="space-y-3">
                 {notes.map((n) => (
-                  <article key={n.savedAt} className="rounded-2xl border border-border/70 bg-card p-4">
+                  <article
+                    key={n.savedAt}
+                    className="rounded-2xl border border-border/70 bg-card p-4"
+                  >
                     <p className="text-xs uppercase tracking-wider text-muted-foreground">
                       {new Date(n.savedAt).toLocaleDateString()}
                     </p>
@@ -251,7 +301,8 @@ function EmptyState() {
       <Bookmark className="mx-auto h-10 w-10 text-muted-foreground" />
       <h2 className="mt-4 font-display text-2xl">Nothing saved yet</h2>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-        Save schemes, draft complaints, and download document checklists. Everything stays private on your device.
+        Save schemes, draft complaints, and download document checklists. Everything stays private
+        on your device.
       </p>
       <div className="mt-6 flex flex-wrap justify-center gap-2">
         <Button asChild size="sm" className="gap-1.5">

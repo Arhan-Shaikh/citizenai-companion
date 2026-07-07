@@ -41,7 +41,11 @@ export const thread = {
 };
 
 export type SavedScheme = { savedAt: number; scheme: SchemeResult["schemes"][number] };
-export type SavedComplaint = { savedAt: number; complaint: ComplaintResult; originalDescription: string };
+export type SavedComplaint = {
+  savedAt: number;
+  complaint: ComplaintResult;
+  originalDescription: string;
+};
 export type SavedDocument = { savedAt: number; documentType: string; guide: DocumentGuide };
 export type SavedNote = { savedAt: number; question: string; answer: string };
 
@@ -54,17 +58,26 @@ export const saved = {
       write(KEYS.schemes, [{ savedAt: Date.now(), scheme }, ...list].slice(0, 50));
     },
     remove: (name: string) => {
-      write(KEYS.schemes, read<SavedScheme[]>(KEYS.schemes, []).filter((s) => s.scheme.name !== name));
+      write(
+        KEYS.schemes,
+        read<SavedScheme[]>(KEYS.schemes, []).filter((s) => s.scheme.name !== name),
+      );
     },
   },
   complaints: {
     load: () => read<SavedComplaint[]>(KEYS.complaints, []),
     add: (complaint: ComplaintResult, originalDescription: string) => {
       const list = read<SavedComplaint[]>(KEYS.complaints, []);
-      write(KEYS.complaints, [{ savedAt: Date.now(), complaint, originalDescription }, ...list].slice(0, 50));
+      write(
+        KEYS.complaints,
+        [{ savedAt: Date.now(), complaint, originalDescription }, ...list].slice(0, 50),
+      );
     },
     remove: (savedAt: number) => {
-      write(KEYS.complaints, read<SavedComplaint[]>(KEYS.complaints, []).filter((c) => c.savedAt !== savedAt));
+      write(
+        KEYS.complaints,
+        read<SavedComplaint[]>(KEYS.complaints, []).filter((c) => c.savedAt !== savedAt),
+      );
     },
   },
   documents: {
@@ -72,10 +85,16 @@ export const saved = {
     add: (documentType: string, guide: DocumentGuide) => {
       const list = read<SavedDocument[]>(KEYS.documents, []);
       const filtered = list.filter((d) => d.documentType !== documentType);
-      write(KEYS.documents, [{ savedAt: Date.now(), documentType, guide }, ...filtered].slice(0, 50));
+      write(
+        KEYS.documents,
+        [{ savedAt: Date.now(), documentType, guide }, ...filtered].slice(0, 50),
+      );
     },
     remove: (documentType: string) => {
-      write(KEYS.documents, read<SavedDocument[]>(KEYS.documents, []).filter((d) => d.documentType !== documentType));
+      write(
+        KEYS.documents,
+        read<SavedDocument[]>(KEYS.documents, []).filter((d) => d.documentType !== documentType),
+      );
     },
   },
   notes: {
@@ -85,7 +104,10 @@ export const saved = {
       write(KEYS.notes, [{ savedAt: Date.now(), question, answer }, ...list].slice(0, 50));
     },
     remove: (savedAt: number) => {
-      write(KEYS.notes, read<SavedNote[]>(KEYS.notes, []).filter((n) => n.savedAt !== savedAt));
+      write(
+        KEYS.notes,
+        read<SavedNote[]>(KEYS.notes, []).filter((n) => n.savedAt !== savedAt),
+      );
     },
   },
 };

@@ -4,8 +4,20 @@ import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import {
-  Loader2, Mic, MicOff, Send, Sparkles, Trash2, Volume2, Copy, User,
-  Languages, FileText, Landmark, MessageSquarePlus, Bookmark,
+  Loader2,
+  Mic,
+  MicOff,
+  Send,
+  Sparkles,
+  Trash2,
+  Volume2,
+  Copy,
+  User,
+  Languages,
+  FileText,
+  Landmark,
+  MessageSquarePlus,
+  Bookmark,
 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
@@ -58,7 +70,9 @@ function AssistantPage() {
   const [translatingIdx, setTranslatingIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const mediaRef = useRef<{ recorder: MediaRecorder; stream: MediaStream; chunks: Blob[] } | null>(null);
+  const mediaRef = useRef<{ recorder: MediaRecorder; stream: MediaStream; chunks: Blob[] } | null>(
+    null,
+  );
   const composerRef = useRef<HTMLFormElement>(null);
   const [kbInset, setKbInset] = useState(0);
   const [composerH, setComposerH] = useState(160);
@@ -95,7 +109,6 @@ function AssistantPage() {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-
 
   // Load thread + seed on mount
   useEffect(() => {
@@ -153,8 +166,15 @@ function AssistantPage() {
     const clean = text.replace(/[#*_`>]/g, "").replace(/\[[^\]]+\]\([^)]+\)/g, "");
     const u = new SpeechSynthesisUtterance(clean);
     const langMap: Record<string, string> = {
-      en: "en-IN", hi: "hi-IN", mr: "mr-IN", ta: "ta-IN", gu: "gu-IN",
-      bn: "bn-IN", te: "te-IN", kn: "kn-IN", pa: "pa-IN",
+      en: "en-IN",
+      hi: "hi-IN",
+      mr: "mr-IN",
+      ta: "ta-IN",
+      gu: "gu-IN",
+      bn: "bn-IN",
+      te: "te-IN",
+      kn: "kn-IN",
+      pa: "pa-IN",
     };
     u.lang = langMap[language] ?? "en-IN";
     u.rate = 1.0;
@@ -217,7 +237,6 @@ function AssistantPage() {
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-4rem)] max-w-4xl flex-col px-4 pt-6 sm:px-6">
-
       <header className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
         <div className="flex min-w-0 items-center gap-3">
           <img src={logo} alt="" width={40} height={40} className="h-10 w-10 shrink-0" />
@@ -226,7 +245,9 @@ function AssistantPage() {
               AI Civic Companion
             </h1>
             <p className="truncate text-xs text-muted-foreground">
-              Responding in <span className="font-medium text-foreground">{activeLang?.native}</span> · Powered by Gemini
+              Responding in{" "}
+              <span className="font-medium text-foreground">{activeLang?.native}</span> · Powered by
+              Gemini
             </p>
           </div>
         </div>
@@ -252,7 +273,6 @@ function AssistantPage() {
         aria-live="polite"
         aria-label="Conversation"
       >
-
         {messages.length === 0 && !busy && <EmptyState onPick={(t) => send(t)} />}
 
         <AnimatePresence initial={false}>
@@ -283,7 +303,9 @@ function AssistantPage() {
                     <MessageActions
                       idx={i}
                       content={m.content}
-                      lastUserQuestion={messages[i - 1]?.role === "user" ? messages[i - 1].content : ""}
+                      lastUserQuestion={
+                        messages[i - 1]?.role === "user" ? messages[i - 1].content : ""
+                      }
                       speaking={speakingIdx === i}
                       translating={translatingIdx === i}
                       onSpeak={() => speak(i, m.content)}
@@ -305,14 +327,18 @@ function AssistantPage() {
                           toast.success(`Translated to ${target}`);
                         } catch (err) {
                           toast.error("Translation didn't go through", {
-                            description: err instanceof Error ? err.message : "Try again in a moment.",
+                            description:
+                              err instanceof Error ? err.message : "Try again in a moment.",
                           });
                         } finally {
                           setTranslatingIdx(null);
                         }
                       }}
                       onSave={() => {
-                        const q = messages[i - 1]?.role === "user" ? messages[i - 1].content : "Assistant reply";
+                        const q =
+                          messages[i - 1]?.role === "user"
+                            ? messages[i - 1].content
+                            : "Assistant reply";
                         saved.notes.add(q, m.content);
                         toast.success("Saved to Citizen Hub", {
                           description: "Find it in My Space.",
@@ -323,7 +349,10 @@ function AssistantPage() {
                         setInput("Can you explain that in simpler words?");
                       }}
                       onDeptGuidance={() => {
-                        const q = messages[i - 1]?.role === "user" ? messages[i - 1].content : m.content.slice(0, 200);
+                        const q =
+                          messages[i - 1]?.role === "user"
+                            ? messages[i - 1].content
+                            : m.content.slice(0, 200);
                         assistantSeed.set(q);
                         navigate({ to: "/complaints" });
                       }}
@@ -374,7 +403,6 @@ function AssistantPage() {
         }}
       >
         <div className="rounded-2xl border border-border/70 bg-card/95 p-2 shadow-lift backdrop-blur supports-[backdrop-filter]:bg-card/80">
-
           <Textarea
             ref={textareaRef}
             value={input}
@@ -385,14 +413,21 @@ function AssistantPage() {
                 send(input);
               }
             }}
-            placeholder={listening ? "Listening… tap the mic again to stop." : "Ask about any government service…"}
+            placeholder={
+              listening
+                ? "Listening… tap the mic again to stop."
+                : "Ask about any government service…"
+            }
             rows={2}
             className="min-h-[56px] resize-none border-0 bg-transparent px-3 py-2 text-sm shadow-none focus-visible:ring-0"
             disabled={busy}
             aria-label="Message"
             onFocus={() => {
               requestAnimationFrame(() => {
-                scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+                scrollRef.current?.scrollTo({
+                  top: scrollRef.current.scrollHeight,
+                  behavior: "smooth",
+                });
               });
             }}
           />
@@ -401,7 +436,10 @@ function AssistantPage() {
               type="button"
               variant="ghost"
               size="icon"
-              className={cn("h-9 w-9 min-h-9 min-w-9 sm:h-11 sm:w-11", listening && "text-destructive")}
+              className={cn(
+                "h-9 w-9 min-h-9 min-w-9 sm:h-11 sm:w-11",
+                listening && "text-destructive",
+              )}
               onClick={() => (listening ? stopListening() : startListening())}
               aria-label={listening ? "Stop recording" : "Start voice input"}
               disabled={busy}
@@ -420,7 +458,8 @@ function AssistantPage() {
           </div>
         </div>
         <p className="mt-2 text-center text-[11px] text-muted-foreground">
-          Never share Aadhaar numbers, OTPs, or passwords. This is guidance, not an official government service.
+          Never share Aadhaar numbers, OTPs, or passwords. This is guidance, not an official
+          government service.
         </p>
       </form>
     </div>
@@ -484,13 +523,32 @@ function MessageActions({
   return (
     <div className="mt-3 border-t border-border/60 pt-3">
       <div className="mb-2 flex flex-wrap gap-1">
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onSpeak} aria-label={speaking ? "Stop speaking" : "Speak aloud"}>
-          <Volume2 className={cn("h-3.5 w-3.5", speaking && "text-primary")} /> {speaking ? "Stop" : "Speak"}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={onSpeak}
+          aria-label={speaking ? "Stop speaking" : "Speak aloud"}
+        >
+          <Volume2 className={cn("h-3.5 w-3.5", speaking && "text-primary")} />{" "}
+          {speaking ? "Stop" : "Speak"}
         </Button>
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onCopy} aria-label="Copy answer">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={onCopy}
+          aria-label="Copy answer"
+        >
           <Copy className="h-3.5 w-3.5" /> Copy
         </Button>
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onSave} aria-label="Save to Citizen Hub">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1.5 text-xs"
+          onClick={onSave}
+          aria-label="Save to Citizen Hub"
+        >
           <Bookmark className="h-3.5 w-3.5" /> Save
         </Button>
       </div>

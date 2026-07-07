@@ -2,8 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  Loader2, FileText, AlertTriangle, Lightbulb, ExternalLink, Bookmark, CheckCircle2,
-  Clock, IndianRupee, Landmark, ScrollText,
+  Loader2,
+  FileText,
+  AlertTriangle,
+  Lightbulb,
+  ExternalLink,
+  Bookmark,
+  CheckCircle2,
+  Clock,
+  IndianRupee,
+  Landmark,
+  ScrollText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,7 +74,9 @@ function DocumentsPage() {
       const res = await getDocumentGuide({ data: { documentType: doc, language } });
       setGuide(res);
     } catch (err) {
-      toast.error("Could not fetch guide", { description: err instanceof Error ? err.message : "" });
+      toast.error("Could not fetch guide", {
+        description: err instanceof Error ? err.message : "",
+      });
     } finally {
       setBusy(false);
     }
@@ -75,10 +86,12 @@ function DocumentsPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <header className="mb-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-primary">Feature</p>
-        <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">Document Assistant</h1>
+        <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">
+          Document Assistant
+        </h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Pick a document. Gemini returns eligibility, required proofs, fees, realistic timeline, common mistakes and
-          insider tips — plus what to do next.
+          Pick a document. Gemini returns eligibility, required proofs, fees, realistic timeline,
+          common mistakes and insider tips — plus what to do next.
         </p>
       </header>
 
@@ -116,7 +129,9 @@ function DocumentsPage() {
           placeholder="Or type any other document (e.g. GST Registration)"
           className="flex-1 min-w-[200px]"
         />
-        <Button type="submit" variant="outline" disabled={!custom.trim() || busy}>Get guide</Button>
+        <Button type="submit" variant="outline" disabled={!custom.trim() || busy}>
+          Get guide
+        </Button>
       </form>
 
       {busy && <ProgressiveLoader stages={LOADING_STAGES.documents} className="mt-8" />}
@@ -152,14 +167,28 @@ function DocumentsPage() {
                 value={safeHttpUrl(guide.officialPortal) ?? "Not confirmed"}
                 link={safeHttpUrl(guide.officialPortal) ?? undefined}
               />
-
             </div>
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
-              <Block icon={CheckCircle2} title="Eligibility" items={guide.eligibility} tone="success" />
+              <Block
+                icon={CheckCircle2}
+                title="Eligibility"
+                items={guide.eligibility}
+                tone="success"
+              />
               <Block icon={ScrollText} title="Required documents" items={guide.requiredDocuments} />
-              <Block icon={ScrollText} title="Application steps" items={guide.applicationSteps} numbered />
-              <Block icon={AlertTriangle} title="Common mistakes" items={guide.commonMistakes} tone="warning" />
+              <Block
+                icon={ScrollText}
+                title="Application steps"
+                items={guide.applicationSteps}
+                numbered
+              />
+              <Block
+                icon={AlertTriangle}
+                title="Common mistakes"
+                items={guide.commonMistakes}
+                tone="warning"
+              />
               <Block icon={Lightbulb} title="Insider tips" items={guide.tips} tone="accent" />
             </div>
           </div>
@@ -233,7 +262,11 @@ function Block({
         <Icon className="h-4 w-4" /> {title}
       </h3>
       {numbered ? (
-        <ol className="list-decimal space-y-1 pl-5 text-sm">{items.map((it) => <li key={`${title}-${it}`}>{it}</li>)}</ol>
+        <ol className="list-decimal space-y-1 pl-5 text-sm">
+          {items.map((it) => (
+            <li key={`${title}-${it}`}>{it}</li>
+          ))}
+        </ol>
       ) : (
         <ul className="space-y-1 text-sm">
           {items.map((it) => (

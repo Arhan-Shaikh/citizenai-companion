@@ -55,7 +55,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="font-display text-3xl">This page didn't load</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Something went wrong. You can retry or head home.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Something went wrong. You can retry or head home.
+        </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -103,13 +105,34 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:title", content: "Smart Bharat AI — Your Intelligent Civic Companion" },
       {
         name: "twitter:description",
-        content: "AI-powered civic companion for India. Schemes, complaints, documents, multilingual guidance.",
+        content:
+          "AI-powered civic companion for India. Schemes, complaints, documents, multilingual guidance.",
       },
-      { name: "description", content: "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents." },
-      { property: "og:description", content: "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents." },
-      { name: "twitter:description", content: "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b75faa-2f06-41c6-a2ec-8689edbe6f11/id-preview-057454b6--c12ac0cc-98a4-4b8a-9f8b-224c0321f41e.lovable.app-1783404808733.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b75faa-2f06-41c6-a2ec-8689edbe6f11/id-preview-057454b6--c12ac0cc-98a4-4b8a-9f8b-224c0321f41e.lovable.app-1783404808733.png" },
+      {
+        name: "description",
+        content:
+          "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents.",
+      },
+      {
+        property: "og:description",
+        content:
+          "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents.",
+      },
+      {
+        name: "twitter:description",
+        content:
+          "India's AI-powered civic companion. Access government services, discover eligible schemes, generate professional complaints, understand official documents.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b75faa-2f06-41c6-a2ec-8689edbe6f11/id-preview-057454b6--c12ac0cc-98a4-4b8a-9f8b-224c0321f41e.lovable.app-1783404808733.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/84b75faa-2f06-41c6-a2ec-8689edbe6f11/id-preview-057454b6--c12ac0cc-98a4-4b8a-9f8b-224c0321f41e.lovable.app-1783404808733.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

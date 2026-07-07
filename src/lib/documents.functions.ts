@@ -32,7 +32,6 @@ export type DocumentGuide = {
   nextActions: NextAction[];
 };
 
-
 function normalize(raw: unknown, docType: string): DocumentGuide {
   const r = (raw ?? {}) as Record<string, unknown>;
   const link = asString(r.officialPortal, "").trim();
@@ -114,7 +113,10 @@ Constraints: up to 5 eligibility, up to 8 requiredDocuments, 4-7 applicationStep
     try {
       const parsed = extractJson(text);
       const guide = normalize(parsed, data.documentType);
-      log.debug("parsed", { steps: guide.applicationSteps.length, docs: guide.requiredDocuments.length });
+      log.debug("parsed", {
+        steps: guide.applicationSteps.length,
+        docs: guide.requiredDocuments.length,
+      });
       return guide;
     } catch (err) {
       log.error("JSON parse failed", { err, preview: text.slice(0, 800) });

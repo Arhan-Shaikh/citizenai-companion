@@ -42,9 +42,17 @@ function asPriority(v: unknown): ComplaintResult["priority"] {
 }
 
 function extractField(text: string, label: string): string {
-  const re = new RegExp(`(?:^|\\n)\\s*(?:\\*\\*|##?\\s*)?${label}\\s*(?:\\*\\*)?\\s*[:\\-]\\s*([^\\n]+(?:\\n(?!\\s*(?:\\*\\*|##?|[A-Z][A-Za-z ]+:))[^\\n]+)*)`, "i");
+  const re = new RegExp(
+    `(?:^|\\n)\\s*(?:\\*\\*|##?\\s*)?${label}\\s*(?:\\*\\*)?\\s*[:\\-]\\s*([^\\n]+(?:\\n(?!\\s*(?:\\*\\*|##?|[A-Z][A-Za-z ]+:))[^\\n]+)*)`,
+    "i",
+  );
   const m = text.match(re);
-  return m ? m[1].trim().replace(/^\*+|\*+$/g, "").trim() : "";
+  return m
+    ? m[1]
+        .trim()
+        .replace(/^\*+|\*+$/g, "")
+        .trim()
+    : "";
 }
 
 function fallbackParse(text: string, description: string): ComplaintResult {
@@ -52,9 +60,13 @@ function fallbackParse(text: string, description: string): ComplaintResult {
   const category = extractField(text, "Category") || "General Grievance";
   const department = extractField(text, "Department") || "Municipal Authority";
   const priority = asPriority(extractField(text, "Priority"));
-  const bodyMatch = text.match(/(?:Complaint Body|Body|Complaint Letter)\s*[:\-]?\s*([\s\S]+?)(?=\n\s*(?:Suggested Evidence|Expected|Impact|Affected|Next Actions)\s*[:\-]|$)/i);
+  const bodyMatch = text.match(
+    /(?:Complaint Body|Body|Complaint Letter)\s*[:-]?\s*([\s\S]+?)(?=\n\s*(?:Suggested Evidence|Expected|Impact|Affected|Next Actions)\s*[:-]|$)/i,
+  );
   const body = bodyMatch ? bodyMatch[1].trim() : text.trim();
-  const evidenceMatch = text.match(/Suggested Evidence\s*[:\-]?\s*([\s\S]+?)(?=\n\s*(?:Expected|Impact|Affected|Next Actions|$))/i);
+  const evidenceMatch = text.match(
+    /Suggested Evidence\s*[:\-]?\s*([\s\S]+?)(?=\n\s*(?:Expected|Impact|Affected|Next Actions|$))/i,
+  );
   const suggestedEvidence = evidenceMatch
     ? evidenceMatch[1]
         .split(/\n|,/)
@@ -62,7 +74,10 @@ function fallbackParse(text: string, description: string): ComplaintResult {
         .filter((s) => s.length > 2)
         .slice(0, 5)
     : [];
-  const expectedImpact = extractField(text, "Expected Resolution") || extractField(text, "Expected Impact") || "Timely resolution of the reported issue.";
+  const expectedImpact =
+    extractField(text, "Expected Resolution") ||
+    extractField(text, "Expected Impact") ||
+    "Timely resolution of the reported issue.";
 
   return {
     subject: subject.slice(0, 140),
@@ -76,7 +91,11 @@ function fallbackParse(text: string, description: string): ComplaintResult {
     impactScore: 60,
     nextActions: [
       { label: "Translate to Hindi", kind: "translate", payload: "Hindi" },
-      { label: "Ask follow-up in Assistant", kind: "assistant", payload: `How do I escalate this complaint: ${subject.slice(0, 80)}?` },
+      {
+        label: "Ask follow-up in Assistant",
+        kind: "assistant",
+        payload: `How do I escalate this complaint: ${subject.slice(0, 80)}?`,
+      },
       { label: "Download as .txt", kind: "download", payload: "txt" },
     ],
   };
@@ -104,7 +123,11 @@ function normalize(raw: unknown, description: string): ComplaintResult {
   while (nextActions.length < 3) {
     const defaults: NextComplaintAction[] = [
       { label: "Translate to Hindi", kind: "translate", payload: "Hindi" },
-      { label: "Ask follow-up in Assistant", kind: "assistant", payload: `How do I escalate this complaint?` },
+      {
+        label: "Ask follow-up in Assistant",
+        kind: "assistant",
+        payload: `How do I escalate this complaint?`,
+      },
       { label: "Download as .txt", kind: "download", payload: "txt" },
     ];
     nextActions.push(defaults[nextActions.length]);
@@ -121,9 +144,13 @@ function normalize(raw: unknown, description: string): ComplaintResult {
     department: asString(obj.department).trim() || "Municipal Authority",
     priority: asPriority(obj.priority),
     body,
-    expectedImpact: asString(obj.expectedImpact).trim() || asString(obj.expectedResolution).trim() || "Timely resolution of the reported issue.",
+    expectedImpact:
+      asString(obj.expectedImpact).trim() ||
+      asString(obj.expectedResolution).trim() ||
+      "Timely resolution of the reported issue.",
     suggestedEvidence: asStringArray(obj.suggestedEvidence).slice(0, 5),
-    affectedCitizensEstimate: asString(obj.affectedCitizensEstimate).trim() || "Local residents in the area",
+    affectedCitizensEstimate:
+      asString(obj.affectedCitizensEstimate).trim() || "Local residents in the area",
     impactScore,
     nextActions,
   };
@@ -173,7 +200,9 @@ Write subject, body, expectedImpact in ${lang}. Keep category, department, prior
       log.debug("gateway response", { length: text.length });
     } catch (err) {
       log.error("gateway request failed", err);
-      throw new Error("Complaint service is temporarily unavailable. Please try again in a moment.");
+      throw new Error(
+        "Complaint service is temporarily unavailable. Please try again in a moment.",
+      );
     }
 
     if (!text.trim()) {

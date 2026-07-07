@@ -39,10 +39,13 @@ export type SchemeResult = {
   nextActions: NextAction[];
 };
 
-
 function normalize(raw: unknown): SchemeResult {
   const obj = (raw ?? {}) as Record<string, unknown>;
-  const schemesRaw = Array.isArray(obj.schemes) ? obj.schemes : Array.isArray(raw) ? (raw as unknown[]) : [];
+  const schemesRaw = Array.isArray(obj.schemes)
+    ? obj.schemes
+    : Array.isArray(raw)
+      ? (raw as unknown[])
+      : [];
   const schemes: Scheme[] = schemesRaw
     .map((s) => {
       const r = (s ?? {}) as Record<string, unknown>;
@@ -66,7 +69,9 @@ function normalize(raw: unknown): SchemeResult {
       const kind = asString(r.kind) as NextAction["kind"];
       return {
         label: asString(r.label).trim(),
-        kind: (["assistant", "documents", "complaints"] as const).includes(kind) ? kind : "assistant",
+        kind: (["assistant", "documents", "complaints"] as const).includes(kind)
+          ? kind
+          : "assistant",
         payload: asString(r.payload).trim(),
       };
     })

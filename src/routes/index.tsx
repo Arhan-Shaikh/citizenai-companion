@@ -103,11 +103,15 @@ function Hero() {
             <span className="text-accent">.</span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Access government services, report issues, discover schemes, understand documents and receive AI-powered
-            guidance in seconds — in nine Indian languages.
+            Access government services, report issues, discover schemes, understand documents and
+            receive AI-powered guidance in seconds — in nine Indian languages.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Button asChild size="lg" className="h-12 min-w-[180px] rounded-xl px-6 text-base shadow-lift">
+            <Button
+              asChild
+              size="lg"
+              className="h-12 min-w-[180px] rounded-xl px-6 text-base shadow-lift"
+            >
               <Link to="/assistant">
                 Try AI Assistant
                 <ArrowRight className="ml-1 h-4 w-4" />
@@ -139,8 +143,8 @@ function Hero() {
                   <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Summary
                 </h3>
                 <p className="text-muted-foreground">
-                  Apply online at Passport Seva, book an appointment at your nearest PSK, and carry originals of address
-                  and identity proof.
+                  Apply online at Passport Seva, book an appointment at your nearest PSK, and carry
+                  originals of address and identity proof.
                 </p>
                 <h3 className="mb-2 mt-4 flex items-center gap-2 text-sm font-semibold">
                   <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Steps
@@ -164,7 +168,13 @@ function Hero() {
   );
 }
 
-function NextChip({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
+function NextChip({
+  icon: Icon,
+  label,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+}) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs text-foreground">
       <Icon className="h-3 w-3 text-primary" />
@@ -184,7 +194,10 @@ function TrustStrip() {
     <section className="border-y border-border/60 bg-secondary/40">
       <div className="mx-auto grid max-w-6xl gap-4 px-4 py-5 sm:grid-cols-2 sm:px-6 md:grid-cols-4">
         {items.map(({ icon: Icon, label }) => (
-          <div key={label} className="flex min-w-0 items-center gap-2.5 text-xs text-muted-foreground">
+          <div
+            key={label}
+            className="flex min-w-0 items-center gap-2.5 text-xs text-muted-foreground"
+          >
             <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />
             <span className="truncate">{label}</span>
           </div>
@@ -203,7 +216,8 @@ function FeatureGrid() {
           Everything a citizen needs, connected by AI.
         </h2>
         <p className="mt-4 text-muted-foreground">
-          Each feature ends with an AI-generated <em>Next Best Action</em>, so you never hit a dead-end.
+          Each feature ends with an AI-generated <em>Next Best Action</em>, so you never hit a
+          dead-end.
         </p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -238,15 +252,29 @@ function FeatureGrid() {
 
 function HowItWorks() {
   const steps = [
-    { n: "01", title: "Ask in your language", body: "Type or speak. Nine Indian languages supported end-to-end." },
-    { n: "02", title: "Gemini structures the answer", body: "Summary, Steps, Documents, Warnings, Tips, Links — never a paragraph dump." },
-    { n: "03", title: "Take the next best action", body: "Every response ends with real CTAs into other features." },
+    {
+      n: "01",
+      title: "Ask in your language",
+      body: "Type or speak. Nine Indian languages supported end-to-end.",
+    },
+    {
+      n: "02",
+      title: "Gemini structures the answer",
+      body: "Summary, Steps, Documents, Warnings, Tips, Links — never a paragraph dump.",
+    },
+    {
+      n: "03",
+      title: "Take the next best action",
+      body: "Every response ends with real CTAs into other features.",
+    },
   ];
   return (
     <section className="relative border-y border-border/60 bg-secondary/30">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
         <div className="mb-10 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">How it works</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+            How it works
+          </p>
           <h2 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">
             AI-native, not AI-bolted-on.
           </h2>
@@ -266,12 +294,19 @@ function HowItWorks() {
 }
 
 function Roadmap() {
-  const items = ["Interactive civic issue map", "Impact Score analytics", "Voice-first assistant on WhatsApp", "State-specific scheme deep-links"];
+  const items = [
+    "Interactive civic issue map",
+    "Impact Score analytics",
+    "Voice-first assistant on WhatsApp",
+    "State-specific scheme deep-links",
+  ];
   return (
     <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
       <div className="rounded-3xl border border-border/70 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 p-8 sm:p-12">
         <p className="text-xs font-semibold uppercase tracking-widest text-primary">Roadmap</p>
-        <h2 className="mt-2 font-display text-3xl leading-tight tracking-tight sm:text-4xl">Coming next.</h2>
+        <h2 className="mt-2 font-display text-3xl leading-tight tracking-tight sm:text-4xl">
+          Coming next.
+        </h2>
         <ul className="mt-6 grid gap-3 sm:grid-cols-2">
           {items.map((it) => (
             <li key={it} className="flex items-center gap-3 text-sm">

@@ -21,7 +21,7 @@ function emit(level: Level, scope: string, message: string, meta?: unknown) {
   if (!isDev() && level !== "error") return;
   const tag = `[${scope}]`;
   const args = meta === undefined ? [tag, message] : [tag, message, meta];
-  // eslint-disable-next-line no-console
+
   console[level](...args);
 }
 

@@ -38,7 +38,8 @@ export const Route = createFileRoute("/complaints")({
       { property: "og:title", content: "Complaint Generator — Smart Bharat AI" },
       {
         property: "og:description",
-        content: "AI-drafted civic complaints for India, ready for CPGRAMS and municipal grievance portals.",
+        content:
+          "AI-drafted civic complaints for India, ready for CPGRAMS and municipal grievance portals.",
       },
     ],
   }),
@@ -80,7 +81,9 @@ function ComplaintsPage() {
     setBusy(true);
     setResult(null);
     try {
-      const res = await generateComplaint({ data: { description, location: location || undefined, language } });
+      const res = await generateComplaint({
+        data: { description, location: location || undefined, language },
+      });
       setResult(res);
       setEditedBody(res.body);
     } catch (err) {
@@ -110,7 +113,9 @@ function ComplaintsPage() {
     if (a.kind === "translate") {
       setTranslating(true);
       try {
-        const { text } = await translateText({ data: { text: editedBody, targetLanguage: a.payload } });
+        const { text } = await translateText({
+          data: { text: editedBody, targetLanguage: a.payload },
+        });
         setEditedBody(text);
         toast.success(`Translated to ${a.payload}`);
       } catch (err) {
@@ -136,10 +141,12 @@ function ComplaintsPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
       <header className="mb-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-primary">Feature</p>
-        <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">Complaint Generator</h1>
+        <h1 className="mt-2 font-display text-4xl leading-tight tracking-tight sm:text-5xl">
+          Complaint Generator
+        </h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Describe the issue naturally. Gemini structures it into a professional civic complaint ready for CPGRAMS or
-          your municipal portal.
+          Describe the issue naturally. Gemini structures it into a professional civic complaint
+          ready for CPGRAMS or your municipal portal.
         </p>
       </header>
 
@@ -178,7 +185,12 @@ function ComplaintsPage() {
           />
         </div>
         <div className="mt-6">
-          <Button type="submit" size="lg" disabled={busy || !description.trim()} className="h-12 gap-2 rounded-xl px-6">
+          <Button
+            type="submit"
+            size="lg"
+            disabled={busy || !description.trim()}
+            className="h-12 gap-2 rounded-xl px-6"
+          >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
             {busy ? "Drafting…" : "Draft professional complaint"}
           </Button>
@@ -188,11 +200,17 @@ function ComplaintsPage() {
       {busy && <ProgressiveLoader stages={LOADING_STAGES.complaints} className="mt-8" />}
 
       {result && (
-        <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 space-y-4">
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mt-8 space-y-4"
+        >
           <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-soft">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">{result.category}</p>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  {result.category}
+                </p>
                 <h2 className="mt-1 text-xl font-semibold leading-tight">{result.subject}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">To: {result.department}</p>
               </div>
@@ -208,7 +226,11 @@ function ComplaintsPage() {
 
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               <MetricCard icon={Gauge} label="Impact Score" value={`${result.impactScore}/100`} />
-              <MetricCard icon={Users} label="Affected citizens" value={result.affectedCitizensEstimate} />
+              <MetricCard
+                icon={Users}
+                label="Affected citizens"
+                value={result.affectedCitizensEstimate}
+              />
               <MetricCard icon={MapPin} label="Expected outcome" value={result.expectedImpact} />
             </div>
 
@@ -232,7 +254,9 @@ function ComplaintsPage() {
                   <AlertTriangle className="h-4 w-4" /> Suggested evidence to attach
                 </h3>
                 <ul className="ml-6 list-disc space-y-1 text-sm">
-                  {result.suggestedEvidence.map((e, i) => <li key={i}>{e}</li>)}
+                  {result.suggestedEvidence.map((e, i) => (
+                    <li key={i}>{e}</li>
+                  ))}
                 </ul>
               </div>
             )}
@@ -249,7 +273,12 @@ function ComplaintsPage() {
               >
                 <Copy className="h-3.5 w-3.5" /> Copy
               </Button>
-              <Button variant="outline" size="sm" onClick={() => download("txt")} className="gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => download("txt")}
+                className="gap-1.5"
+              >
                 <Download className="h-3.5 w-3.5" /> Download .txt
               </Button>
               <Button variant="outline" size="sm" onClick={saveComplaint} className="gap-1.5">
@@ -262,7 +291,11 @@ function ComplaintsPage() {
             </div>
           </div>
 
-          <NextBestAction actions={result.nextActions} onCustom={handleNext} title="Continue your complaint" />
+          <NextBestAction
+            actions={result.nextActions}
+            onCustom={handleNext}
+            title="Continue your complaint"
+          />
         </motion.section>
       )}
     </div>

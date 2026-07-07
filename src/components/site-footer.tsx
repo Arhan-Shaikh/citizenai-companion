@@ -13,8 +13,8 @@ export function SiteFooter() {
             </span>
           </div>
           <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-            Your intelligent civic companion. Making Government of India services simple, smart and accessible for every
-            citizen.
+            Your intelligent civic companion. Making Government of India services simple, smart and
+            accessible for every citizen.
           </p>
         </div>
         <FooterCol
@@ -40,8 +40,8 @@ export function SiteFooter() {
       <div className="border-t border-border/60">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-4 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <span>
-            © {new Date().getFullYear()} Smart Bharat AI · Powered by Google Gemini · Not an official Government of
-            India service.
+            © {new Date().getFullYear()} Smart Bharat AI · Powered by Google Gemini · Not an
+            official Government of India service.
           </span>
           <span>Built for the Global Prompt Challenge.</span>
         </div>
@@ -61,7 +61,9 @@ function FooterCol({
 }) {
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {title}
+      </h3>
       <ul className="mt-3 space-y-2 text-sm">
         {links?.map(([to, label]) => (
           <li key={to}>
