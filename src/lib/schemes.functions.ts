@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateText, NoObjectGeneratedError, Output } from "ai";
+import { generateObject, NoObjectGeneratedError } from "ai";
 import { z } from "zod";
 import { CHAT_MODEL, createGateway } from "./ai-gateway.server";
 import { langLabel } from "./prompt-templates";
