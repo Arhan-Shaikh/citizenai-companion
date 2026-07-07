@@ -61,7 +61,7 @@ function fallbackParse(text: string, description: string): ComplaintResult {
   const department = extractField(text, "Department") || "Municipal Authority";
   const priority = asPriority(extractField(text, "Priority"));
   const bodyMatch = text.match(
-    /(?:Complaint Body|Body|Complaint Letter)\s*[:\-]?\s*([\s\S]+?)(?=\n\s*(?:Suggested Evidence|Expected|Impact|Affected|Next Actions)\s*[:\-]|$)/i,
+    /(?:Complaint Body|Body|Complaint Letter)\s*[:-]?\s*([\s\S]+?)(?=\n\s*(?:Suggested Evidence|Expected|Impact|Affected|Next Actions)\s*[:-]|$)/i,
   );
   const body = bodyMatch ? bodyMatch[1].trim() : text.trim();
   const evidenceMatch = text.match(
