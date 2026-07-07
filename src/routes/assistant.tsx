@@ -245,7 +245,10 @@ function AssistantPage() {
       <div
         ref={scrollRef}
         className="flex-1 space-y-4 overflow-y-auto rounded-2xl border border-border/70 bg-card/50 p-4 sm:p-6"
-        style={{ paddingBottom: composerH + 16, scrollPaddingBottom: composerH + 16 }}
+        style={{
+          paddingBottom: `calc(${composerH + 32}px + env(safe-area-inset-bottom, 0px))`,
+          scrollPaddingBottom: composerH + 48,
+        }}
         aria-live="polite"
         aria-label="Conversation"
       >
@@ -384,16 +387,21 @@ function AssistantPage() {
             }}
             placeholder={listening ? "Listening… tap the mic again to stop." : "Ask about any government service…"}
             rows={2}
-            className="min-h-[64px] resize-none border-0 bg-transparent px-3 py-2 text-sm shadow-none focus-visible:ring-0"
+            className="min-h-[56px] resize-none border-0 bg-transparent px-3 py-2 text-sm shadow-none focus-visible:ring-0"
             disabled={busy}
             aria-label="Message"
+            onFocus={() => {
+              requestAnimationFrame(() => {
+                scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+              });
+            }}
           />
           <div className="flex items-center justify-between px-2 pb-1">
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className={cn("min-h-11 min-w-11", listening && "text-destructive")}
+              className={cn("h-9 w-9 min-h-9 min-w-9 sm:h-11 sm:w-11", listening && "text-destructive")}
               onClick={() => (listening ? stopListening() : startListening())}
               aria-label={listening ? "Stop recording" : "Start voice input"}
               disabled={busy}
@@ -404,7 +412,7 @@ function AssistantPage() {
               type="submit"
               size="sm"
               disabled={!input.trim() || busy}
-              className="h-10 min-w-24 gap-1.5 rounded-lg"
+              className="h-9 gap-1.5 rounded-lg px-3 text-xs sm:h-10 sm:min-w-24 sm:px-4 sm:text-sm"
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send
