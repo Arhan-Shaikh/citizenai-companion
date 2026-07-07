@@ -64,15 +64,14 @@ Then provide exactly 3 nextActions the citizen should take. Each nextAction "kin
 Write all user-facing text in ${lang}. Keep total output concise.`;
 
     try {
-      const { experimental_output } = await generateText({
+      const { object } = await generateObject({
         model,
         prompt,
-        experimental_output: Output.object({ schema: SchemeSchema }),
+        schema: SchemeSchema,
       });
-      const out = experimental_output;
       return {
-        schemes: out.schemes.slice(0, 4),
-        nextActions: out.nextActions.slice(0, 3),
+        schemes: object.schemes.slice(0, 4),
+        nextActions: object.nextActions.slice(0, 3),
       };
     } catch (error) {
       if (NoObjectGeneratedError.isInstance(error)) {
