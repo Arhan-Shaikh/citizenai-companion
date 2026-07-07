@@ -237,29 +237,60 @@ function AssistantPage() {
                 {m.role === "assistant" ? (
                   <>
                     <Markdown>{m.content}</Markdown>
-                    <div className="mt-3 flex gap-1 border-t border-border/60 pt-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs"
-                        onClick={() => speak(i, m.content)}
-                        aria-label={speakingIdx === i ? "Stop speaking" : "Speak aloud"}
-                      >
-                        <Volume2 className={cn("h-3.5 w-3.5", speakingIdx === i && "text-primary")} />
-                        {speakingIdx === i ? "Stop" : "Speak"}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs"
-                        onClick={() => {
-                          navigator.clipboard.writeText(m.content);
-                          toast.success("Copied");
-                        }}
-                      >
-                        <Copy className="h-3.5 w-3.5" /> Copy
-                      </Button>
-                    </div>
+                    <MessageActions
+                      idx={i}
+                      content={m.content}
+                      lastUserQuestion={messages[i - 1]?.role === "user" ? messages[i - 1].content : ""}
+                      speaking={speakingIdx === i}
+                      translating={translatingIdx === i}
+                      onSpeak={() => speak(i, m.content)}
+                      onCopy={() => {
+                        navigator.clipboard.writeText(m.content);
+                        toast.success("Copied to clipboard");
+                      }}
+                      onTranslate={async (target) => {
+                        setTranslatingIdx(i);
+                        try {
+                          const { text } = await translateText({
+                            data: { text: m.content, targetLanguage: target },
+                          });
+                          setMessages((prev) => {
+                            const next = [...prev];
+                            next[i] = { role: "assistant", content: text };
+                            return next;
+                          });
+                          toast.success(`Translated to ${target}`);
+                        } catch (err) {
+                          toast.error("Translation didn't go through", {
+                            description: err instanceof Error ? err.message : "Try again in a moment.",
+                          });
+                        } finally {
+                          setTranslatingIdx(null);
+                        }
+                      }}
+                      onSave={() => {
+                        const q = messages[i - 1]?.role === "user" ? messages[i - 1].content : "Assistant reply";
+                        saved.notes.add(q, m.content);
+                        toast.success("Saved to Citizen Hub", {
+                          description: "Find it in My Space.",
+                        });
+                      }}
+                      onFollowUp={() => {
+                        textareaRef.current?.focus();
+                        setInput("Can you explain that in simpler words?");
+                      }}
+                      onDeptGuidance={() => {
+                        const q = messages[i - 1]?.role === "user" ? messages[i - 1].content : m.content.slice(0, 200);
+                        assistantSeed.set(q);
+                        navigate({ to: "/complaints" });
+                      }}
+                      onDocChecklist={() => {
+                        const q = messages[i - 1]?.role === "user" ? messages[i - 1].content : "";
+                        assistantSeed.set(q);
+                        navigate({ to: "/documents" });
+                      }}
+                      currentLang={language}
+                    />
                   </>
                 ) : (
                   <p className="whitespace-pre-wrap text-sm">{m.content}</p>
@@ -279,8 +310,8 @@ function AssistantPage() {
             <span className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/10">
               <img src={logo} alt="" width={20} height={20} className="h-5 w-5" />
             </span>
-            <div className="rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm">
-              <span className="shimmer-text">Thinking through your question…</span>
+            <div className="flex-1">
+              <ProgressiveLoader stages={LOADING_STAGES.assistant} />
             </div>
           </motion.div>
         )}
