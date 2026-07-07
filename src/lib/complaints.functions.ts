@@ -65,7 +65,7 @@ function fallbackParse(text: string, description: string): ComplaintResult {
   );
   const body = bodyMatch ? bodyMatch[1].trim() : text.trim();
   const evidenceMatch = text.match(
-    /Suggested Evidence\s*[:\-]?\s*([\s\S]+?)(?=\n\s*(?:Expected|Impact|Affected|Next Actions|$))/i,
+    /Suggested Evidence\s*[:-]?\s*([\s\S]+?)(?=\n\s*(?:Expected|Impact|Affected|Next Actions|$))/i,
   );
   const suggestedEvidence = evidenceMatch
     ? evidenceMatch[1]
