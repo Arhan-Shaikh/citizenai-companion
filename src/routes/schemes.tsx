@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { Loader2, Sparkles, ExternalLink, Bookmark, BookmarkCheck, CheckCircle2, FileText, ArrowRight } from "lucide-react";
+import { Loader2, Sparkles, ExternalLink, Bookmark, BookmarkCheck, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NextBestAction } from "@/components/next-best-action";
+import { ProgressiveLoader, LOADING_STAGES } from "@/components/progressive-loader";
 import { useLanguage } from "@/components/language-provider";
 import { recommendSchemes, type SchemeResult } from "@/lib/schemes.functions";
 import { saved } from "@/lib/local-store";
@@ -187,7 +188,7 @@ function SchemesPage() {
         </div>
       </form>
 
-      {busy && <SkeletonList />}
+      {busy && <ProgressiveLoader stages={LOADING_STAGES.schemes} className="mt-8" />}
 
       {result && (
         <div className="mt-8 space-y-4">
@@ -249,10 +250,17 @@ function SchemesPage() {
       )}
 
       {!result && !busy && (
-        <div className="mt-10 rounded-2xl border border-dashed border-border/70 bg-secondary/30 p-8 text-center">
-          <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground">
-            Fill the form above and get personalized scheme recommendations in seconds.
+        <div className="mt-10 rounded-2xl border border-dashed border-border/70 bg-gradient-to-br from-primary/5 to-accent/5 p-10 text-center">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10">
+            <Sparkles className="h-6 w-6 text-primary" aria-hidden />
+          </div>
+          <h2 className="mt-4 font-display text-2xl">Personalized in under 10 seconds</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            Gemini scans hundreds of central and state schemes and returns only the ones you're eligible for — with
+            benefits, documents and exact steps.
+          </p>
+          <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Fill the form above to begin
           </p>
         </div>
       )}
@@ -284,25 +292,3 @@ function Column({ title, items, numbered }: { title: string; items: string[]; nu
   );
 }
 
-function SkeletonList() {
-  return (
-    <div className="mt-8 space-y-4">
-      {[0, 1].map((i) => (
-        <div key={i} className="animate-pulse rounded-2xl border border-border/70 bg-card p-6">
-          <div className="h-3 w-24 rounded bg-muted" />
-          <div className="mt-3 h-6 w-3/4 rounded bg-muted" />
-          <div className="mt-2 h-4 w-full rounded bg-muted" />
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {[0, 1, 2].map((j) => (
-              <div key={j} className="space-y-2">
-                <div className="h-3 w-16 rounded bg-muted" />
-                <div className="h-3 w-full rounded bg-muted" />
-                <div className="h-3 w-5/6 rounded bg-muted" />
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}

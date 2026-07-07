@@ -8,6 +8,7 @@ const KEYS = {
   schemes: "sba.saved.schemes.v1",
   complaints: "sba.saved.complaints.v1",
   documents: "sba.saved.documents.v1",
+  notes: "sba.saved.notes.v1",
   language: "sba.language.v1",
   theme: "sba.theme.v1",
   seed: "sba.assistant.seed.v1",
@@ -42,6 +43,7 @@ export const thread = {
 export type SavedScheme = { savedAt: number; scheme: SchemeResult["schemes"][number] };
 export type SavedComplaint = { savedAt: number; complaint: ComplaintResult; originalDescription: string };
 export type SavedDocument = { savedAt: number; documentType: string; guide: DocumentGuide };
+export type SavedNote = { savedAt: number; question: string; answer: string };
 
 export const saved = {
   schemes: {
@@ -74,6 +76,16 @@ export const saved = {
     },
     remove: (documentType: string) => {
       write(KEYS.documents, read<SavedDocument[]>(KEYS.documents, []).filter((d) => d.documentType !== documentType));
+    },
+  },
+  notes: {
+    load: () => read<SavedNote[]>(KEYS.notes, []),
+    add: (question: string, answer: string) => {
+      const list = read<SavedNote[]>(KEYS.notes, []);
+      write(KEYS.notes, [{ savedAt: Date.now(), question, answer }, ...list].slice(0, 50));
+    },
+    remove: (savedAt: number) => {
+      write(KEYS.notes, read<SavedNote[]>(KEYS.notes, []).filter((n) => n.savedAt !== savedAt));
     },
   },
 };
@@ -111,6 +123,7 @@ export function exportAllData(): string {
       schemes: saved.schemes.load(),
       complaints: saved.complaints.load(),
       documents: saved.documents.load(),
+      notes: saved.notes.load(),
       exportedAt: new Date().toISOString(),
     },
     null,

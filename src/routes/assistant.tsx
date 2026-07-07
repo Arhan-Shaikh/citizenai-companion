@@ -2,14 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { toast } from "sonner";
-import { Loader2, Mic, MicOff, Send, Sparkles, Trash2, Volume2, Copy, User } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  Loader2, Mic, MicOff, Send, Sparkles, Trash2, Volume2, Copy, User,
+  Languages, FileText, Landmark, MessageSquarePlus, Bookmark,
+} from "lucide-react";
 import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Markdown } from "@/components/markdown";
+import { ProgressiveLoader, LOADING_STAGES } from "@/components/progressive-loader";
 import { useLanguage } from "@/components/language-provider";
 import { askAssistant, type ChatMessage } from "@/lib/chat.functions";
-import { thread as threadStore, assistantSeed } from "@/lib/local-store";
+import { translateText } from "@/lib/complaints.functions";
+import { thread as threadStore, assistantSeed, saved } from "@/lib/local-store";
 import { LANGUAGES } from "@/lib/prompt-templates";
 import { cn } from "@/lib/utils";
 
@@ -43,11 +49,13 @@ const SUGGESTIONS = [
 
 function AssistantPage() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [listening, setListening] = useState(false);
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
+  const [translatingIdx, setTranslatingIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const mediaRef = useRef<{ recorder: MediaRecorder; stream: MediaStream; chunks: Blob[] } | null>(null);
@@ -229,29 +237,60 @@ function AssistantPage() {
                 {m.role === "assistant" ? (
                   <>
                     <Markdown>{m.content}</Markdown>
-                    <div className="mt-3 flex gap-1 border-t border-border/60 pt-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs"
-                        onClick={() => speak(i, m.content)}
-                        aria-label={speakingIdx === i ? "Stop speaking" : "Speak aloud"}
-                      >
-                        <Volume2 className={cn("h-3.5 w-3.5", speakingIdx === i && "text-primary")} />
-                        {speakingIdx === i ? "Stop" : "Speak"}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 gap-1.5 text-xs"
-                        onClick={() => {
-                          navigator.clipboard.writeText(m.content);
-                          toast.success("Copied");
-                        }}
-                      >
-                        <Copy className="h-3.5 w-3.5" /> Copy
-                      </Button>
-                    </div>
+                    <MessageActions
+                      idx={i}
+                      content={m.content}
+                      lastUserQuestion={messages[i - 1]?.role === "user" ? messages[i - 1].content : ""}
+                      speaking={speakingIdx === i}
+                      translating={translatingIdx === i}
+                      onSpeak={() => speak(i, m.content)}
+                      onCopy={() => {
+                        navigator.clipboard.writeText(m.content);
+                        toast.success("Copied to clipboard");
+                      }}
+                      onTranslate={async (target) => {
+                        setTranslatingIdx(i);
+                        try {
+                          const { text } = await translateText({
+                            data: { text: m.content, targetLanguage: target },
+                          });
+                          setMessages((prev) => {
+                            const next = [...prev];
+                            next[i] = { role: "assistant", content: text };
+                            return next;
+                          });
+                          toast.success(`Translated to ${target}`);
+                        } catch (err) {
+                          toast.error("Translation didn't go through", {
+                            description: err instanceof Error ? err.message : "Try again in a moment.",
+                          });
+                        } finally {
+                          setTranslatingIdx(null);
+                        }
+                      }}
+                      onSave={() => {
+                        const q = messages[i - 1]?.role === "user" ? messages[i - 1].content : "Assistant reply";
+                        saved.notes.add(q, m.content);
+                        toast.success("Saved to Citizen Hub", {
+                          description: "Find it in My Space.",
+                        });
+                      }}
+                      onFollowUp={() => {
+                        textareaRef.current?.focus();
+                        setInput("Can you explain that in simpler words?");
+                      }}
+                      onDeptGuidance={() => {
+                        const q = messages[i - 1]?.role === "user" ? messages[i - 1].content : m.content.slice(0, 200);
+                        assistantSeed.set(q);
+                        navigate({ to: "/complaints" });
+                      }}
+                      onDocChecklist={() => {
+                        const q = messages[i - 1]?.role === "user" ? messages[i - 1].content : "";
+                        assistantSeed.set(q);
+                        navigate({ to: "/documents" });
+                      }}
+                      currentLang={language}
+                    />
                   </>
                 ) : (
                   <p className="whitespace-pre-wrap text-sm">{m.content}</p>
@@ -271,8 +310,8 @@ function AssistantPage() {
             <span className="mt-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary/10">
               <img src={logo} alt="" width={20} height={20} className="h-5 w-5" />
             </span>
-            <div className="rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm">
-              <span className="shimmer-text">Thinking through your question…</span>
+            <div className="flex-1">
+              <ProgressiveLoader stages={LOADING_STAGES.assistant} />
             </div>
           </motion.div>
         )}
@@ -355,5 +394,89 @@ function EmptyState({ onPick }: { onPick: (t: string) => void }) {
         ))}
       </div>
     </div>
+  );
+}
+
+function MessageActions({
+  content,
+  speaking,
+  translating,
+  onSpeak,
+  onCopy,
+  onTranslate,
+  onSave,
+  onFollowUp,
+  onDeptGuidance,
+  onDocChecklist,
+  currentLang,
+}: {
+  idx: number;
+  content: string;
+  lastUserQuestion: string;
+  speaking: boolean;
+  translating: boolean;
+  onSpeak: () => void;
+  onCopy: () => void;
+  onTranslate: (target: string) => void;
+  onSave: () => void;
+  onFollowUp: () => void;
+  onDeptGuidance: () => void;
+  onDocChecklist: () => void;
+  currentLang: string;
+}) {
+  void content;
+  const translateTarget = currentLang === "en" ? "Hindi" : "English";
+  return (
+    <div className="mt-3 border-t border-border/60 pt-3">
+      <div className="mb-2 flex flex-wrap gap-1">
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onSpeak} aria-label={speaking ? "Stop speaking" : "Speak aloud"}>
+          <Volume2 className={cn("h-3.5 w-3.5", speaking && "text-primary")} /> {speaking ? "Stop" : "Speak"}
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onCopy} aria-label="Copy answer">
+          <Copy className="h-3.5 w-3.5" /> Copy
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onSave} aria-label="Save to Citizen Hub">
+          <Bookmark className="h-3.5 w-3.5" /> Save
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <span className="mr-1 self-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Next step
+        </span>
+        <ActionChip
+          icon={Languages}
+          label={translating ? "Translating…" : `Translate to ${translateTarget}`}
+          onClick={() => onTranslate(translateTarget)}
+          disabled={translating}
+        />
+        <ActionChip icon={FileText} label="Document checklist" onClick={onDocChecklist} />
+        <ActionChip icon={Landmark} label="Find department" onClick={onDeptGuidance} />
+        <ActionChip icon={MessageSquarePlus} label="Ask a follow-up" onClick={onFollowUp} />
+      </div>
+    </div>
+  );
+}
+
+function ActionChip({
+  icon: Icon,
+  label,
+  onClick,
+  disabled,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Icon className="h-3 w-3 text-primary" aria-hidden />
+      {label}
+    </button>
   );
 }
