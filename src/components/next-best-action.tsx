@@ -64,9 +64,9 @@ export function NextBestAction({
           const Icon = iconFor[a.kind as ActionKind] ?? ArrowRight;
           return (
             <button
-              key={`${a.kind}-${i}`}
+              key={`${a.kind}-${a.label}-${a.payload}`}
               onClick={() => handle(a)}
-              className="group flex min-h-14 items-start gap-3 rounded-xl border border-border/70 bg-card p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group flex min-h-14 items-start gap-3 rounded-xl border border-border/70 bg-card p-3 text-left transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
                 <Icon className="h-4 w-4" />
@@ -74,7 +74,7 @@ export function NextBestAction({
               <span className="min-w-0 flex-1">
                 <span className="line-clamp-2 text-sm font-medium leading-snug">{a.label}</span>
                 <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                  Continue <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                  Continue <ArrowRight className="h-3 w-3" />
                 </span>
               </span>
             </button>

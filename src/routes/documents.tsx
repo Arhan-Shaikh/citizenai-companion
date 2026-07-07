@@ -233,11 +233,11 @@ function Block({
         <Icon className="h-4 w-4" /> {title}
       </h3>
       {numbered ? (
-        <ol className="list-decimal space-y-1 pl-5 text-sm">{items.map((it, i) => <li key={i}>{it}</li>)}</ol>
+        <ol className="list-decimal space-y-1 pl-5 text-sm">{items.map((it) => <li key={`${title}-${it}`}>{it}</li>)}</ol>
       ) : (
         <ul className="space-y-1 text-sm">
-          {items.map((it, i) => (
-            <li key={i} className="flex items-start gap-2">
+          {items.map((it) => (
+            <li key={`${title}-${it}`} className="flex items-start gap-2">
               <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-current opacity-60" />
               <span>{it}</span>
             </li>
