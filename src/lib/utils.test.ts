@@ -3,7 +3,8 @@ import { cn, safeHttpUrl } from "@/lib/utils";
 
 describe("cn", () => {
   it("merges tailwind classes and drops falsy values", () => {
-    expect(cn("p-2", false && "hidden", "p-4")).toBe("p-4");
+    const shouldHide = false as boolean;
+    expect(cn("p-2", shouldHide && "hidden", "p-4")).toBe("p-4");
   });
   it("joins conditional class arrays", () => {
     expect(cn(["a", "b"], { c: true, d: false })).toContain("c");
