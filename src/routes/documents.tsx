@@ -12,6 +12,7 @@ import { NextBestAction } from "@/components/next-best-action";
 import { useLanguage } from "@/components/language-provider";
 import { getDocumentGuide, type DocumentGuide } from "@/lib/documents.functions";
 import { saved, assistantSeed } from "@/lib/local-store";
+import { safeHttpUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/documents")({
   head: () => ({
@@ -155,9 +156,10 @@ function DocumentsPage() {
               <MetricCard
                 icon={Landmark}
                 label="Official portal"
-                value={guide.officialPortal ?? "Not confirmed"}
-                link={guide.officialPortal ?? undefined}
+                value={safeHttpUrl(guide.officialPortal) ?? "Not confirmed"}
+                link={safeHttpUrl(guide.officialPortal) ?? undefined}
               />
+
             </div>
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">

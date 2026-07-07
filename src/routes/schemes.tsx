@@ -18,7 +18,7 @@ import { NextBestAction } from "@/components/next-best-action";
 import { useLanguage } from "@/components/language-provider";
 import { recommendSchemes, type SchemeResult } from "@/lib/schemes.functions";
 import { saved } from "@/lib/local-store";
-import { cn } from "@/lib/utils";
+import { cn, safeHttpUrl } from "@/lib/utils";
 
 export const Route = createFileRoute("/schemes")({
   head: () => ({
@@ -228,16 +228,20 @@ function SchemesPage() {
                 <Column title="Documents" items={s.documents} />
                 <Column title="Steps" items={s.steps} numbered />
               </div>
-              {s.officialLink && (
-                <a
-                  href={s.officialLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-5 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-                >
-                  Visit official portal <ExternalLink className="h-3.5 w-3.5" />
-                </a>
-              )}
+              {(() => {
+                const safeLink = safeHttpUrl(s.officialLink);
+                return safeLink ? (
+                  <a
+                    href={safeLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-5 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+                  >
+                    Visit official portal <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                ) : null;
+              })()}
+
             </motion.article>
           ))}
           <NextBestAction actions={result.nextActions} title="Continue your journey" />
