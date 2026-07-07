@@ -396,3 +396,87 @@ function EmptyState({ onPick }: { onPick: (t: string) => void }) {
     </div>
   );
 }
+
+function MessageActions({
+  content,
+  speaking,
+  translating,
+  onSpeak,
+  onCopy,
+  onTranslate,
+  onSave,
+  onFollowUp,
+  onDeptGuidance,
+  onDocChecklist,
+  currentLang,
+}: {
+  idx: number;
+  content: string;
+  lastUserQuestion: string;
+  speaking: boolean;
+  translating: boolean;
+  onSpeak: () => void;
+  onCopy: () => void;
+  onTranslate: (target: string) => void;
+  onSave: () => void;
+  onFollowUp: () => void;
+  onDeptGuidance: () => void;
+  onDocChecklist: () => void;
+  currentLang: string;
+}) {
+  void content;
+  const translateTarget = currentLang === "en" ? "Hindi" : "English";
+  return (
+    <div className="mt-3 border-t border-border/60 pt-3">
+      <div className="mb-2 flex flex-wrap gap-1">
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onSpeak} aria-label={speaking ? "Stop speaking" : "Speak aloud"}>
+          <Volume2 className={cn("h-3.5 w-3.5", speaking && "text-primary")} /> {speaking ? "Stop" : "Speak"}
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onCopy} aria-label="Copy answer">
+          <Copy className="h-3.5 w-3.5" /> Copy
+        </Button>
+        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs" onClick={onSave} aria-label="Save to Citizen Hub">
+          <Bookmark className="h-3.5 w-3.5" /> Save
+        </Button>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        <span className="mr-1 self-center text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Next step
+        </span>
+        <ActionChip
+          icon={Languages}
+          label={translating ? "Translating…" : `Translate to ${translateTarget}`}
+          onClick={() => onTranslate(translateTarget)}
+          disabled={translating}
+        />
+        <ActionChip icon={FileText} label="Document checklist" onClick={onDocChecklist} />
+        <ActionChip icon={Landmark} label="Find department" onClick={onDeptGuidance} />
+        <ActionChip icon={MessageSquarePlus} label="Ask a follow-up" onClick={onFollowUp} />
+      </div>
+    </div>
+  );
+}
+
+function ActionChip({
+  icon: Icon,
+  label,
+  onClick,
+  disabled,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <Icon className="h-3 w-3 text-primary" aria-hidden />
+      {label}
+    </button>
+  );
+}
