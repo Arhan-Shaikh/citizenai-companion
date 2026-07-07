@@ -3,6 +3,10 @@ import { generateText } from "ai";
 import { z } from "zod";
 import { CHAT_MODEL, createGateway } from "./ai-gateway.server";
 import { langLabel } from "./prompt-templates";
+import { asString, asStringArray, extractJson } from "./safe-json";
+import { createLogger } from "./logger";
+
+const log = createLogger("documents");
 
 const DocInput = z.object({
   documentType: z.string().min(2).max(80),
