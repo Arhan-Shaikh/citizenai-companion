@@ -3,6 +3,10 @@ import { generateText } from "ai";
 import { z } from "zod";
 import { CHAT_MODEL, createGateway } from "./ai-gateway.server";
 import { langLabel } from "./prompt-templates";
+import { asString, asStringArray, extractJson } from "./safe-json";
+import { createLogger } from "./logger";
+
+const log = createLogger("schemes");
 
 const InputSchema = z.object({
   age: z.number().min(0).max(120),
