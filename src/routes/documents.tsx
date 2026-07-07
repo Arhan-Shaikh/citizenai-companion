@@ -122,7 +122,7 @@ function DocumentsPage() {
       {busy && <ProgressiveLoader stages={LOADING_STAGES.documents} className="mt-8" />}
 
       {guide && !busy && (
-        <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8 space-y-4">
+        <section className="mt-8 space-y-4 animate-fade-in-up">
           <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-soft">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
               <div className="min-w-0">
@@ -165,7 +165,7 @@ function DocumentsPage() {
           </div>
 
           <NextBestAction actions={guide.nextActions} title="Next best action" />
-        </motion.section>
+        </section>
       )}
     </div>
   );
