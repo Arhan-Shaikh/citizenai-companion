@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bookmark, Download, FileText, MessageSquare, Sparkles, Trash2, Upload } from "lucide-react";
+import { Bookmark, Download, FileText, MessageSquare, Sparkles, Trash2, Upload, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   clearAllData,
@@ -9,6 +9,7 @@ import {
   saved,
   type SavedComplaint,
   type SavedDocument,
+  type SavedNote,
   type SavedScheme,
 } from "@/lib/local-store";
 
