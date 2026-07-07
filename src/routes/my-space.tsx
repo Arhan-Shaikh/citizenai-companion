@@ -33,16 +33,18 @@ function MySpacePage() {
   const [schemes, setSchemes] = useState<SavedScheme[]>([]);
   const [complaints, setComplaints] = useState<SavedComplaint[]>([]);
   const [docs, setDocs] = useState<SavedDocument[]>([]);
+  const [notes, setNotes] = useState<SavedNote[]>([]);
 
   const refresh = () => {
     setSchemes(saved.schemes.load());
     setComplaints(saved.complaints.load());
     setDocs(saved.documents.load());
+    setNotes(saved.notes.load());
   };
 
   useEffect(refresh, []);
 
-  const totalItems = schemes.length + complaints.length + docs.length;
+  const totalItems = schemes.length + complaints.length + docs.length + notes.length;
 
   const exportJson = () => {
     const data = exportAllData();
