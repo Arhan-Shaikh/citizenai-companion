@@ -21,10 +21,10 @@ export function SiteNav() {
 
   return (
     <header className="glass sticky top-0 z-40 border-b border-border/60">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
-        <Link to="/" className="flex min-w-0 items-center gap-2.5">
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-2 px-3 sm:gap-4 sm:px-6">
+        <Link to="/" className="flex min-w-0 shrink items-center gap-2">
           <img src={logo} alt="" width={32} height={32} className="h-8 w-8 shrink-0" />
-          <span className="truncate text-sm font-semibold tracking-tight">
+          <span className="truncate text-[13px] font-semibold tracking-tight sm:text-sm">
             Smart Bharat <span className="text-primary">AI</span>
           </span>
         </Link>
@@ -42,21 +42,21 @@ export function SiteNav() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
           <LanguageSelect />
           <Button
             variant="ghost"
             size="icon"
             onClick={toggle}
             aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
-            className="min-h-11 min-w-11"
+            className="h-10 w-10 shrink-0 sm:min-h-11 sm:min-w-11"
           >
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="min-h-11 min-w-11 md:hidden"
+            className="h-10 w-10 shrink-0 sm:min-h-11 sm:min-w-11 md:hidden"
             aria-label="Toggle navigation"
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
