@@ -292,25 +292,3 @@ function Column({ title, items, numbered }: { title: string; items: string[]; nu
   );
 }
 
-function SkeletonList() {
-  return (
-    <div className="mt-8 space-y-4">
-      {[0, 1].map((i) => (
-        <div key={i} className="animate-pulse rounded-2xl border border-border/70 bg-card p-6">
-          <div className="h-3 w-24 rounded bg-muted" />
-          <div className="mt-3 h-6 w-3/4 rounded bg-muted" />
-          <div className="mt-2 h-4 w-full rounded bg-muted" />
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {[0, 1, 2].map((j) => (
-              <div key={j} className="space-y-2">
-                <div className="h-3 w-16 rounded bg-muted" />
-                <div className="h-3 w-full rounded bg-muted" />
-                <div className="h-3 w-5/6 rounded bg-muted" />
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
