@@ -250,10 +250,17 @@ function SchemesPage() {
       )}
 
       {!result && !busy && (
-        <div className="mt-10 rounded-2xl border border-dashed border-border/70 bg-secondary/30 p-8 text-center">
-          <FileText className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground">
-            Fill the form above and get personalized scheme recommendations in seconds.
+        <div className="mt-10 rounded-2xl border border-dashed border-border/70 bg-gradient-to-br from-primary/5 to-accent/5 p-10 text-center">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10">
+            <Sparkles className="h-6 w-6 text-primary" aria-hidden />
+          </div>
+          <h2 className="mt-4 font-display text-2xl">Personalized in under 10 seconds</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            Gemini scans hundreds of central and state schemes and returns only the ones you're eligible for — with
+            benefits, documents and exact steps.
+          </p>
+          <p className="mt-4 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Fill the form above to begin
           </p>
         </div>
       )}
