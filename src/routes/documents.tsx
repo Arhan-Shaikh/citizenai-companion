@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { motion } from "motion/react";
 import { toast } from "sonner";
 import {
   Loader2, FileText, AlertTriangle, Lightbulb, ExternalLink, Bookmark, CheckCircle2,
@@ -87,8 +86,9 @@ function DocumentsPage() {
         {DOCS.map((d) => (
           <button
             key={d.name}
+            type="button"
             onClick={() => fetchGuide(d.name)}
-            className={`group flex items-center gap-3 rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-soft ${
+            className={`group flex items-center gap-3 rounded-2xl border p-4 text-left transition-colors hover:border-primary/40 ${
               selected === d.name ? "border-primary bg-primary/5" : "border-border/70 bg-card"
             }`}
           >
