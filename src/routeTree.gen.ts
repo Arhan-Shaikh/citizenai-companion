@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SchemesRouteImport } from './routes/schemes'
+import { Route as ComplaintsRouteImport } from './routes/complaints'
 import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
@@ -17,6 +18,11 @@ import { Route as ApiTranscribeRouteImport } from './routes/api/transcribe'
 const SchemesRoute = SchemesRouteImport.update({
   id: '/schemes',
   path: '/schemes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComplaintsRoute = ComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssistantRoute = AssistantRouteImport.update({
@@ -38,12 +44,14 @@ const ApiTranscribeRoute = ApiTranscribeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/assistant': typeof AssistantRoute
+  '/complaints': typeof ComplaintsRoute
   '/schemes': typeof SchemesRoute
   '/api/transcribe': typeof ApiTranscribeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/assistant': typeof AssistantRoute
+  '/complaints': typeof ComplaintsRoute
   '/schemes': typeof SchemesRoute
   '/api/transcribe': typeof ApiTranscribeRoute
 }
@@ -51,20 +59,28 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/assistant': typeof AssistantRoute
+  '/complaints': typeof ComplaintsRoute
   '/schemes': typeof SchemesRoute
   '/api/transcribe': typeof ApiTranscribeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/assistant' | '/schemes' | '/api/transcribe'
+  fullPaths: '/' | '/assistant' | '/complaints' | '/schemes' | '/api/transcribe'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/assistant' | '/schemes' | '/api/transcribe'
-  id: '__root__' | '/' | '/assistant' | '/schemes' | '/api/transcribe'
+  to: '/' | '/assistant' | '/complaints' | '/schemes' | '/api/transcribe'
+  id:
+    | '__root__'
+    | '/'
+    | '/assistant'
+    | '/complaints'
+    | '/schemes'
+    | '/api/transcribe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssistantRoute: typeof AssistantRoute
+  ComplaintsRoute: typeof ComplaintsRoute
   SchemesRoute: typeof SchemesRoute
   ApiTranscribeRoute: typeof ApiTranscribeRoute
 }
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/schemes'
       fullPath: '/schemes'
       preLoaderRoute: typeof SchemesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/complaints': {
+      id: '/complaints'
+      path: '/complaints'
+      fullPath: '/complaints'
+      preLoaderRoute: typeof ComplaintsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/assistant': {
@@ -105,6 +128,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssistantRoute: AssistantRoute,
+  ComplaintsRoute: ComplaintsRoute,
   SchemesRoute: SchemesRoute,
   ApiTranscribeRoute: ApiTranscribeRoute,
 }
