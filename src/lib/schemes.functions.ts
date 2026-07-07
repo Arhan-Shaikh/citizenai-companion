@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateObject, NoObjectGeneratedError } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { CHAT_MODEL, createGateway } from "./ai-gateway.server";
 import { langLabel } from "./prompt-templates";
@@ -14,28 +14,103 @@ const InputSchema = z.object({
   language: z.string().max(10).default("en"),
 });
 
-const SchemeSchema = z.object({
-  schemes: z.array(
-    z.object({
-      name: z.string(),
-      ministry: z.string(),
-      whyEligible: z.string(),
-      benefits: z.array(z.string()),
-      documents: z.array(z.string()),
-      steps: z.array(z.string()),
-      officialLink: z.string().nullable(),
-    }),
-  ),
-  nextActions: z.array(
-    z.object({
-      label: z.string(),
-      kind: z.enum(["assistant", "documents", "complaints"]),
-      payload: z.string(),
-    }),
-  ),
-});
+export type Scheme = {
+  name: string;
+  ministry: string;
+  whyEligible: string;
+  benefits: string[];
+  documents: string[];
+  steps: string[];
+  officialLink: string | null;
+};
 
-export type SchemeResult = z.infer<typeof SchemeSchema>;
+export type NextAction = {
+  label: string;
+  kind: "assistant" | "documents" | "complaints";
+  payload: string;
+};
+
+export type SchemeResult = {
+  schemes: Scheme[];
+  nextActions: NextAction[];
+};
+
+function extractJson(text: string): unknown {
+  let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+  const start = cleaned.search(/[{[]/);
+  if (start === -1) throw new Error("No JSON found in response");
+  const openChar = cleaned[start];
+  const closeChar = openChar === "[" ? "]" : "}";
+  const end = cleaned.lastIndexOf(closeChar);
+  if (end === -1 || end < start) throw new Error("No JSON terminator found");
+  cleaned = cleaned.substring(start, end + 1);
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // repair pass
+    let repaired = cleaned
+      .replace(/,\s*}/g, "}")
+      .replace(/,\s*]/g, "]")
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "");
+    // balance braces/brackets
+    let braces = 0;
+    let brackets = 0;
+    for (const c of repaired) {
+      if (c === "{") braces++;
+      else if (c === "}") braces--;
+      else if (c === "[") brackets++;
+      else if (c === "]") brackets--;
+    }
+    while (brackets-- > 0) repaired += "]";
+    while (braces-- > 0) repaired += "}";
+    return JSON.parse(repaired);
+  }
+}
+
+function asString(v: unknown, fallback = ""): string {
+  return typeof v === "string" ? v : fallback;
+}
+
+function asStringArray(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.map((x) => (typeof x === "string" ? x : String(x ?? ""))).filter(Boolean);
+}
+
+function normalize(raw: unknown): SchemeResult {
+  const obj = (raw ?? {}) as Record<string, unknown>;
+  const schemesRaw = Array.isArray(obj.schemes) ? obj.schemes : Array.isArray(raw) ? (raw as unknown[]) : [];
+  const schemes: Scheme[] = schemesRaw
+    .map((s) => {
+      const r = (s ?? {}) as Record<string, unknown>;
+      const link = asString(r.officialLink, "").trim();
+      return {
+        name: asString(r.name).trim(),
+        ministry: asString(r.ministry).trim() || "Government of India",
+        whyEligible: asString(r.whyEligible).trim(),
+        benefits: asStringArray(r.benefits),
+        documents: asStringArray(r.documents),
+        steps: asStringArray(r.steps),
+        officialLink: link && /^https?:\/\//i.test(link) ? link : null,
+      };
+    })
+    .filter((s) => s.name.length > 0);
+
+  const naRaw = Array.isArray(obj.nextActions) ? obj.nextActions : [];
+  const nextActions: NextAction[] = naRaw
+    .map((a) => {
+      const r = (a ?? {}) as Record<string, unknown>;
+      const kind = asString(r.kind) as NextAction["kind"];
+      return {
+        label: asString(r.label).trim(),
+        kind: (["assistant", "documents", "complaints"] as const).includes(kind) ? kind : "assistant",
+        payload: asString(r.payload).trim(),
+      };
+    })
+    .filter((a) => a.label && a.payload);
+
+  return { schemes: schemes.slice(0, 6), nextActions: nextActions.slice(0, 3) };
+}
 
 export const recommendSchemes = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => InputSchema.parse(data))
@@ -44,7 +119,7 @@ export const recommendSchemes = createServerFn({ method: "POST" })
     const model = gateway(CHAT_MODEL);
     const lang = langLabel(data.language);
 
-    const prompt = `Recommend up to 4 real Government of India schemes for this citizen. Prioritize national schemes and well-known state schemes for ${data.state}.
+    const prompt = `You are an expert on Government of India welfare schemes. Recommend 4 to 6 REAL schemes (mix of Central and ${data.state} state schemes) for this citizen. Always return schemes — every citizen qualifies for something (e.g. Ayushman Bharat, PMJAY, PM-KISAN, Sukanya Samriddhi, NPS, Atal Pension Yojana, Startup India, Skill India, Stand-Up India, state-specific ration/education/pension schemes).
 
 Citizen profile:
 - Age: ${data.age}
@@ -54,29 +129,51 @@ Citizen profile:
 - Monthly income (INR): ${data.monthlyIncome}
 - Special categories: ${data.tags.length ? data.tags.join(", ") : "none"}
 
-For each scheme, provide: name, administering ministry, a single sentence whyEligible, up to 4 benefits, up to 6 required documents, up to 5 clear application steps, and the official website URL if you are confident (use null otherwise — never invent URLs).
+Reply in ${lang} for all user-facing text (keep scheme names and URLs in English).
 
-Then provide exactly 3 nextActions the citizen should take. Each nextAction "kind" must be one of:
-- "assistant": pose a follow-up question to the AI (payload = the question)
-- "documents": open the Document Assistant for a specific doc (payload = doc name like "Aadhaar", "Income Certificate")
-- "complaints": draft a complaint (payload = brief description)
+Return ONLY a valid JSON object (no markdown, no code fences, no commentary) exactly matching this shape:
+{
+  "schemes": [
+    {
+      "name": "string",
+      "ministry": "string",
+      "whyEligible": "one sentence",
+      "benefits": ["string", "..."],
+      "documents": ["string", "..."],
+      "steps": ["string", "..."],
+      "officialLink": "https://... or null"
+    }
+  ],
+  "nextActions": [
+    { "label": "short button text", "kind": "assistant" | "documents" | "complaints", "payload": "string" }
+  ]
+}
 
-Write all user-facing text in ${lang}. Keep total output concise.`;
+Constraints: 4-6 schemes, up to 4 benefits, up to 6 documents, up to 5 steps each. Provide exactly 3 nextActions. Never invent URLs — use null when unsure. Output JSON only.`;
+
+    let text = "";
+    try {
+      const result = await generateText({ model, prompt });
+      text = result.text ?? "";
+      console.log("[schemes] gateway response length:", text.length);
+    } catch (err) {
+      console.error("[schemes] gateway request failed:", err);
+      throw err instanceof Error ? err : new Error("Scheme service unavailable");
+    }
+
+    if (!text.trim()) {
+      console.error("[schemes] empty response text from gateway");
+      throw new Error("The AI returned an empty response. Please try again.");
+    }
 
     try {
-      const { object } = await generateObject({
-        model,
-        prompt,
-        schema: SchemeSchema,
-      });
-      return {
-        schemes: object.schemes.slice(0, 4),
-        nextActions: object.nextActions.slice(0, 3),
-      };
-    } catch (error) {
-      if (NoObjectGeneratedError.isInstance(error)) {
-        return { schemes: [], nextActions: [] };
-      }
-      throw error;
+      const parsed = extractJson(text);
+      const normalized = normalize(parsed);
+      console.log("[schemes] parsed schemes:", normalized.schemes.length);
+      return normalized;
+    } catch (err) {
+      console.error("[schemes] JSON parse failed:", err, "\nRaw:", text.slice(0, 500));
+      // Do not throw — return what we can so the UI shows a helpful state.
+      return { schemes: [], nextActions: [] };
     }
   });
